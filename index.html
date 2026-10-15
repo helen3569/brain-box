@@ -1,0 +1,1144 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#fbeee1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="腦袋收納盒">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>腦袋收納盒</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+/* Layout: one narrow column per page, four pages on a bottom tab bar; soft sticker-like cards, one color per page */
+:root{
+  --bg:#fbeee1; --surface:#fffaf4; --ink:#3a2e2a; --muted:#93807a; --line:#f0dccb;
+  --accent:#f0628f; --accent-soft:#ffe3ec; --on-accent:#ffffff;
+  --buy:#f0628f; --buy-soft:#ffe3ec;
+  --trip:#4b9be8; --trip-soft:#e0eefc;
+  --todo:#e0a419; --todo-soft:#fff2cc;
+  --warn:#d9534f; --warn-soft:#fde5e4;
+  --brain:#ffb3c8; --brain-deep:#f0628f; --spark:#ffc93c;
+  --board:#2a9d6f; --board-soft:#daf3e7;
+  --cork:#ead2b2; --cork-dot:#d9b98f; --pin:#f0628f;
+  --n0:#fff1a8; --n1:#ffd9e5; --n2:#d6eaff; --n3:#d7f4e3;
+  --f-display:"Huninn","jf open 粉圓","PingFang TC","Microsoft JhengHei",sans-serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --r:18px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#231c18; --surface:#2e2621; --ink:#f4ebe4; --muted:#b4a297; --line:#433730;
+  --accent:#ff86ab; --accent-soft:#40263a; --on-accent:#2a1520;
+  --buy:#ff86ab; --buy-soft:#40263a; --trip:#7db8f2; --trip-soft:#1f3248; --todo:#f5c04a; --todo-soft:#3d3218;
+  --warn:#ff8a85; --warn-soft:#45262a; --brain:#e98aa8; --brain-deep:#ffb3c8; --spark:#f5c04a; --board:#6fd1a6; --board-soft:#1c3a2e; --cork:#3a3127; --cork-dot:#4a3e31; --pin:#ff86ab; --n0:#4a4222; --n1:#4a2a37; --n2:#21354b; --n3:#20412f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#231c18; --surface:#2e2621; --ink:#f4ebe4; --muted:#b4a297; --line:#433730;
+  --accent:#ff86ab; --accent-soft:#40263a; --on-accent:#2a1520;
+  --buy:#ff86ab; --buy-soft:#40263a; --trip:#7db8f2; --trip-soft:#1f3248; --todo:#f5c04a; --todo-soft:#3d3218;
+  --warn:#ff8a85; --warn-soft:#45262a; --brain:#e98aa8; --brain-deep:#ffb3c8; --spark:#f5c04a; --board:#6fd1a6; --board-soft:#1c3a2e; --cork:#3a3127; --cork-dot:#4a3e31; --pin:#ff86ab; --n0:#4a4222; --n1:#4a2a37; --n2:#21354b; --n3:#20412f; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6}
+.wrap{max-width:640px;margin:0 auto;padding-inline:16px;padding-block:20px 112px;display:flex;flex-direction:column;gap:16px}
+.page{--c:var(--accent);--c-soft:var(--accent-soft)}
+#p-buy,.g-buy{--c:var(--buy);--c-soft:var(--buy-soft)}
+#p-trip,.g-trip{--c:var(--trip);--c-soft:var(--trip-soft)}
+#p-todo,.g-todo{--c:var(--todo);--c-soft:var(--todo-soft)}
+#p-board,.g-board{--c:var(--board);--c-soft:var(--board-soft)}
+h1{font-family:var(--f-display);font-weight:400;font-size:1.65rem;margin:0;letter-spacing:.03em;text-wrap:balance}
+.sub{margin:2px 0 0;color:var(--muted);font-size:.88rem}
+h2{font-family:var(--f-display);font-weight:400;font-size:1.15rem;margin:0;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+h2 small{font-family:var(--f-body);font-size:.8rem;color:var(--muted);font-weight:400;font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--c,var(--accent));outline-offset:2px}
+svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.ph{display:flex;align-items:center;gap:12px}
+.ph .badge-ic{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;background:var(--c-soft);color:var(--c);flex:none}
+.ph .badge-ic svg{width:26px;height:26px}
+
+/* 記下 page: brain mascot + thought bubble */
+.hero{display:flex;align-items:center;gap:14px}
+.brain{width:96px;height:auto;flex:none;overflow:visible}
+@media (prefers-reduced-motion:no-preference){
+  .brain .body{animation:bob 3.2s ease-in-out infinite;transform-origin:50% 90%}
+  .brain .spk{animation:twinkle 2.4s ease-in-out infinite}
+  .brain .spk.b{animation-delay:.8s}.brain .spk.c{animation-delay:1.6s}
+}
+@keyframes bob{50%{transform:translateY(-3px) rotate(-1.5deg)}}
+@keyframes twinkle{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+.brain .spk{transform-box:fill-box;transform-origin:center}
+.bubble-wrap{position:relative;padding-top:10px}
+.bubble-wrap::before,.bubble-wrap::after{content:"";position:absolute;border-radius:50%;background:var(--surface);border:2px solid var(--brain)}
+.bubble-wrap::before{width:14px;height:14px;left:40px;top:-8px}
+.bubble-wrap::after{width:9px;height:9px;left:30px;top:-20px}
+.cap{background:var(--surface);border:2px solid var(--brain);border-radius:24px;padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 4px 0 var(--accent-soft)}
+.cap textarea{border:0;background:transparent;resize:none;font-size:1.05rem;min-height:76px;outline:none;width:100%}
+.cap textarea::placeholder{color:var(--muted)}
+.cap-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:3px;font-size:.75rem;color:var(--muted)}
+.field input,.field select{border:1.5px solid var(--line);border-radius:12px;padding:6px 10px;background:var(--bg);font-size:.9rem;color:var(--ink);min-width:0}
+.primary{border:0;background:var(--accent);color:var(--on-accent);font-weight:700;border-radius:999px;padding:10px 22px;cursor:pointer;margin-left:auto;display:inline-flex;align-items:center;gap:6px;box-shadow:0 3px 0 var(--brain)}
+.primary:active{transform:translateY(2px);box-shadow:0 1px 0 var(--brain)}
+.primary:disabled{opacity:.6;cursor:wait}
+.hint{color:var(--muted);font-size:.8rem;margin:0}
+.status{font-size:.85rem;min-height:1.3em;color:var(--muted)}
+.status.ok{color:var(--accent)}
+
+/* shared lists */
+.box{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r)}
+ul.list{list-style:none;margin:0;padding:0}
+ul.list>li{border-top:1px dashed var(--line)}
+ul.list>li:first-child{border-top:0}
+.row{display:flex;align-items:flex-start;gap:10px;padding:10px 14px}
+.grow{flex:1;min-width:0;overflow-wrap:anywhere}
+.meta{display:block;font-size:.75rem;color:var(--muted)}
+.chk{flex:none;width:22px;height:22px;margin-top:1px;border:2px solid var(--c,var(--accent));border-radius:50%;background:transparent;cursor:pointer;display:grid;place-items:center;padding:0}
+.chk svg{width:13px;height:13px;opacity:0}
+.is-done>.row>.chk{background:var(--c,var(--accent))}
+.is-done>.row>.chk svg{opacity:1}
+.is-done .grow>.t{color:var(--muted);text-decoration:line-through}
+.x{flex:none;border:0;background:none;color:var(--muted);cursor:pointer;font-size:.8rem;padding:2px 6px;border-radius:999px}
+.x.confirm{color:var(--warn);background:var(--warn-soft)}
+.tag{display:inline-block;font-size:.72rem;padding:1px 8px;border-radius:999px;background:var(--c-soft,var(--accent-soft));color:var(--c,var(--accent));margin-right:4px;vertical-align:1px;white-space:nowrap}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 14px;font-size:.85rem;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--c-soft);border-color:var(--c);color:var(--c);font-weight:700}
+.ghost{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 14px;font-size:.85rem;cursor:pointer}
+.empty{text-align:center;color:var(--muted);padding:24px 14px;background:var(--surface);border:2px dashed var(--line);border-radius:var(--r)}
+.empty strong{display:block;font-family:var(--f-display);font-weight:400;font-size:1.15rem;color:var(--ink);margin-bottom:4px}
+.group{display:flex;flex-direction:column;gap:6px}
+.search{border:1.5px solid var(--line);border-radius:999px;padding:8px 14px;background:var(--surface);font-size:.95rem;width:100%}
+
+/* buy */
+.price{flex:none;display:flex;align-items:center;gap:2px;font-variant-numeric:tabular-nums;font-size:.85rem;color:var(--muted)}
+.price input{width:80px;text-align:right;border:1.5px solid transparent;border-radius:10px;background:transparent;padding:2px 6px;font-variant-numeric:tabular-nums;color:var(--ink);font-size:.95rem}
+.price input:hover,.price input:focus{border-color:var(--line);background:var(--bg)}
+.mini-sel{border:1.5px solid var(--line);border-radius:999px;background:var(--bg);font-size:.75rem;padding:1px 6px;margin-top:4px}
+.totals{display:flex;gap:16px;flex-wrap:wrap;align-items:baseline;font-size:.9rem;font-variant-numeric:tabular-nums;background:var(--c-soft);border-radius:var(--r);padding:12px 16px}
+.totals b{font-size:1.35rem;font-family:var(--f-display);font-weight:400;color:var(--c)}
+
+/* trips */
+.trip{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r);overflow:hidden;--c:var(--trip);--c-soft:var(--trip-soft)}
+.trip-date{flex:none;text-align:center;min-width:62px;padding:6px 8px;border-radius:14px;background:var(--trip-soft);color:var(--trip);font-variant-numeric:tabular-nums;line-height:1.25}
+.trip-date b{display:block;font-size:1.1rem;font-family:var(--f-display);font-weight:400}
+.trip-date span{font-size:.72rem}
+.trip-title{font-family:var(--f-display);font-size:1.15rem}
+.trip-tools{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.trip-grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:12px;padding:14px}
+.trip-grid.solo{grid-template-columns:minmax(0,1fr)}
+.trip-left{display:flex;flex-direction:column;gap:8px;min-width:0}
+.trip-left .trip-date{align-self:flex-start}
+.trip-left .trip-tools{margin-top:auto;gap:4px}
+.trip-common,.trip-right{display:flex;flex-direction:column;gap:6px;min-width:0}
+.trip-common ul,.trip-right ul{list-style:none;margin:0;padding:0}
+.trip-common li .row,.trip-right li .row{padding:2px 0;gap:6px;font-size:.88rem}
+.trip-right{gap:8px}
+.tday{display:flex;flex-direction:column;gap:4px}
+.tday-h{font-size:.85rem;font-variant-numeric:tabular-nums;color:var(--trip);font-weight:700}
+.outfit{display:grid;grid-template-columns:auto 1fr;gap:3px 8px;margin:0;padding:6px 10px;border-radius:14px;background:var(--bg);font-size:.84rem}
+.outfit dt{color:var(--muted);font-size:.75rem;padding-top:3px;white-space:nowrap}
+.outfit dd{margin:0;min-width:0;display:flex;flex-wrap:wrap;gap:4px}
+.piece{display:inline-flex;align-items:center;gap:2px;padding:0 0 0 8px;border-radius:999px;background:var(--surface);border:1.5px solid var(--line);max-width:100%;overflow-wrap:anywhere}
+.piece .x{padding:0 6px}
+.trip-grid .chk{width:18px;height:18px}
+.edit-trip{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;padding:12px 14px;border-top:1.5px dashed var(--line);align-items:end}
+.edit-trip .primary{margin:0;padding:7px 16px}
+
+/* folding groups on 記下 page */
+.fold{display:flex;flex-direction:column;gap:8px}
+.log-group{display:flex;flex-direction:column;gap:6px}
+.log-h{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:var(--r);padding:10px 14px;cursor:pointer;font-size:.98rem;font-family:var(--f-display)}
+.log-h .gi{width:32px;height:32px;border-radius:11px;display:grid;place-items:center;background:var(--c-soft);color:var(--c);flex:none}
+.log-h .gi svg{width:18px;height:18px}
+.log-h[aria-expanded="true"]{border-color:var(--c);background:var(--c-soft)}
+.log-h small{font-family:var(--f-body);color:var(--muted);font-variant-numeric:tabular-nums;margin-left:auto}
+.log-h .caret{width:14px;height:14px;flex:none;color:var(--muted);transition:transform .15s}
+.log-h[aria-expanded="true"] .caret{transform:rotate(90deg);color:var(--c)}
+@media (prefers-reduced-motion:reduce){.log-h .caret{transition:none}}
+.log li{font-size:.9rem}
+.log .row{padding:8px 14px}
+#done-list .is-done .grow>.t{text-decoration:none;color:var(--ink)}
+.past-card{padding:0 10px 10px}
+.past-card .trip{border-style:dashed}
+
+/* board */
+.passes{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.pass{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r);padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.pass.warn{border-color:var(--warn)}
+.pass-top{display:flex;align-items:center;gap:6px}
+.pass-name{font-family:var(--f-display);font-size:1.05rem;flex:1;min-width:0;overflow-wrap:anywhere}
+.pass-num{display:flex;align-items:baseline;gap:4px;font-variant-numeric:tabular-nums}
+.pass-num b{font-family:var(--f-display);font-weight:400;font-size:2rem;line-height:1;color:var(--board)}
+.pass.warn .pass-num b{color:var(--warn)}
+.pass-num span{color:var(--muted);font-size:.85rem}
+.bar{height:8px;border-radius:999px;background:var(--board-soft);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:999px;background:var(--board)}
+.pass.warn .bar i{background:var(--warn)}
+.pass-due{font-size:.78rem;color:var(--muted)}
+.pass.warn .pass-due{color:var(--warn)}
+.pass-btns{display:flex;gap:6px;flex-wrap:wrap}
+.pass-btns .ghost{padding:4px 10px}
+.pass-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;align-items:end;background:var(--surface);border:1.5px dashed var(--board);border-radius:var(--r);padding:12px 14px}
+.pass-form .primary{margin:0;padding:7px 16px}
+.cork{background-color:var(--cork);background-image:radial-gradient(var(--cork-dot) 1.2px,transparent 1.4px);background-size:14px 14px;border-radius:22px;padding:18px 14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:16px 12px}
+.note{position:relative;padding:18px 12px 10px;border-radius:4px 4px 14px 4px;box-shadow:0 3px 6px rgba(60,40,20,.15);display:flex;flex-direction:column;gap:6px;min-width:0;color:var(--ink)}
+.note:nth-child(odd){transform:rotate(-1.4deg)}.note:nth-child(even){transform:rotate(1.2deg)}
+.note::before{content:"";position:absolute;top:-6px;left:50%;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:var(--pin);box-shadow:inset -2px -2px 0 rgba(0,0,0,.18)}
+.note.n0{background:var(--n0)}.note.n1{background:var(--n1)}.note.n2{background:var(--n2)}.note.n3{background:var(--n3)}
+.note p{margin:0;font-family:var(--f-display);font-size:1rem;line-height:1.5;overflow-wrap:anywhere;white-space:pre-wrap}
+.note-foot{display:flex;align-items:center;gap:4px}
+.note-foot .meta{flex:1}
+.note-add{display:flex;gap:8px}
+.note-add input{flex:1;min-width:0;border:1.5px solid var(--line);border-radius:999px;padding:8px 14px;background:var(--surface);font-size:.95rem}
+.note-add .primary{margin:0;padding:8px 18px;background:var(--board);box-shadow:0 3px 0 var(--board-soft)}
+.cork .empty{grid-column:1/-1;background:transparent;border-color:var(--cork-dot)}
+.boards{display:flex;flex-direction:column;gap:18px}
+h2.urgent-h{color:var(--warn)}
+.cork.urgent{background-color:var(--warn-soft);background-image:radial-gradient(color-mix(in srgb,var(--warn) 25%,transparent) 1.2px,transparent 1.4px)}
+.note.urgent{background:var(--surface);border:2px solid var(--warn)}
+.note.urgent::before{background:var(--warn)}
+.note .chk{--c:var(--warn);width:20px;height:20px;margin:0}
+.note-add .primary.urgent{background:var(--warn);box-shadow:0 3px 0 var(--warn-soft)}
+
+/* backup */
+.backup{background:var(--surface);border:1.5px dashed var(--line);border-radius:var(--r);padding:10px 14px}
+.backup summary{cursor:pointer;font-family:var(--f-display);color:var(--muted)}
+.backup[open] summary{margin-bottom:8px;color:var(--ink)}
+.backup .stack{display:flex;flex-direction:column;gap:8px}
+.bk-area{width:100%;min-height:70px;border:1.5px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--bg);font-size:.8rem;resize:vertical}
+
+/* account */
+.acct{display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--muted);background:var(--surface);border:1.5px solid var(--line);border-radius:999px;padding:4px 6px 4px 14px}
+.acct span{flex:1;min-width:0;overflow-wrap:anywhere}
+.acct.warn{border-color:var(--warn);color:var(--warn)}
+.acct .ghost{padding:4px 12px;white-space:nowrap}
+
+/* tab bar */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--surface);border-top:1.5px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);border-radius:20px 20px 0 0}
+nav.tabs .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+nav.tabs button{border:0;background:none;padding:8px 4px 7px;cursor:pointer;color:var(--muted);font-size:.78rem;display:flex;flex-direction:column;align-items:center;gap:2px;position:relative}
+nav.tabs .ti{width:42px;height:30px;border-radius:999px;display:grid;place-items:center}
+nav.tabs button svg{width:22px;height:22px}
+nav.tabs button[data-p="add"]{--c:var(--accent);--c-soft:var(--accent-soft)}
+nav.tabs button[data-p="buy"]{--c:var(--buy);--c-soft:var(--buy-soft)}
+nav.tabs button[data-p="trip"]{--c:var(--trip);--c-soft:var(--trip-soft)}
+nav.tabs button[data-p="todo"]{--c:var(--todo);--c-soft:var(--todo-soft)}
+nav.tabs button[data-p="board"]{--c:var(--board);--c-soft:var(--board-soft)}
+nav.tabs button[aria-selected="true"]{color:var(--c);font-weight:700}
+nav.tabs button[aria-selected="true"] .ti{background:var(--c-soft)}
+nav.tabs .badge{position:absolute;top:3px;left:calc(50% + 9px);font-size:.65rem;background:var(--c);color:var(--surface);border-radius:999px;padding:0 6px;font-weight:700;font-variant-numeric:tabular-nums;border:2px solid var(--surface)}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <section id="p-add" class="page">
+    <div class="group" style="gap:14px">
+      <div class="hero">
+        <svg class="brain" viewBox="0 0 110 96" role="img" aria-label="腦袋吉祥物">
+          <g class="body">
+            <g fill="var(--brain)">
+              <circle cx="34" cy="40" r="20"/><circle cx="55" cy="30" r="22"/><circle cx="76" cy="40" r="20"/>
+              <circle cx="31" cy="60" r="18"/><circle cx="55" cy="62" r="22"/><circle cx="79" cy="60" r="18"/>
+            </g>
+            <g fill="none" stroke="var(--brain-deep)" stroke-width="2.4" stroke-linecap="round" opacity=".55">
+              <path d="M55 12 C51 22 59 30 55 40"/>
+              <path d="M30 32 q6 -4 11 1"/><path d="M70 30 q6 -3 10 2"/>
+              <path d="M22 54 q5 3 9 0"/><path d="M80 52 q5 3 9 0"/>
+            </g>
+            <circle cx="46" cy="56" r="3.6" fill="var(--ink)"/><circle cx="64" cy="56" r="3.6" fill="var(--ink)"/>
+            <circle cx="47.2" cy="54.8" r="1.1" fill="var(--surface)"/><circle cx="65.2" cy="54.8" r="1.1" fill="var(--surface)"/>
+            <path d="M51 63 q4 4 8 0" fill="none" stroke="var(--ink)" stroke-width="2.2" stroke-linecap="round"/>
+            <ellipse cx="38" cy="64" rx="5" ry="3" fill="var(--brain-deep)" opacity=".35"/><ellipse cx="72" cy="64" rx="5" ry="3" fill="var(--brain-deep)" opacity=".35"/>
+          </g>
+          <path class="spk a" d="M96 10 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2z" fill="var(--spark)"/>
+          <path class="spk b" d="M14 14 l1.4 4 4 1.4 -4 1.4 -1.4 4 -1.4 -4 -4 -1.4 4 -1.4z" fill="var(--spark)"/>
+          <path class="spk c" d="M101 44 l1 3 3 1 -3 1 -1 3 -1 -3 -3 -1 3 -1z" fill="var(--spark)"/>
+        </svg>
+        <div><h1>腦袋收納盒</h1><p class="sub">腦袋裡冒出來的小念頭，丟進來就好，我幫你收到對的抽屜。</p></div>
+      </div>
+      <div class="bubble-wrap">
+      <form class="cap" id="cap" autocomplete="off">
+        <label for="cap-text" class="hint">腦袋裡在想什麼？</label>
+        <textarea id="cap-text" placeholder="例如：10/24-10/26 去高雄&#10;10/24 想穿白色亞麻襯衫配牛仔褲&#10;想買無線耳機 2990&#10;學會做義大利麵"></textarea>
+        <div class="cap-row">
+          <label class="field" for="cap-start">日期（選填）<input id="cap-start" type="date"></label>
+          <label class="field" for="cap-end">到（選填）<input id="cap-end" type="date"></label>
+          <label class="field" for="cap-dest">放到
+            <select id="cap-dest"><option value="">自動判斷</option><option value="buy">想買</option><option value="trip">行程</option><option value="todo">想做</option><option value="urgent">緊急待辦</option><option value="note">注意事項</option><option value="board">運動堂數</option></select>
+          </label>
+          <button class="primary" id="cap-btn" type="submit">記下</button>
+        </div>
+        <p class="hint" id="cap-hint">文字裡寫日期也可以，像 10/24 或 10/24-26。同一段日期的事會自動收進同一個行程。</p>
+      </form>
+      </div>
+      <div class="status" id="status" aria-live="polite"></div>
+      <div class="acct" id="acct"><span id="acct-txt">資料存在這台裝置</span><button class="ghost" id="acct-btn" type="button" hidden>用 Google 登入同步</button></div>
+      <div class="group" style="gap:8px">
+        <h2>進行中</h2>
+        <div id="log" class="fold"></div>
+      </div>
+      <div class="group" style="gap:8px">
+        <h2>已完成</h2>
+        <label for="past-q" class="hint">搜尋已完成的事、過去的行程或穿搭</label>
+        <input id="past-q" class="search" type="search" placeholder="例如：高雄、10/、白褲子、耳機">
+        <div id="done-list" class="fold"></div>
+      </div>
+      <details class="backup" id="backup">
+        <summary>備份與搬家</summary>
+        <div class="stack">
+          <p class="hint">按「複製全部資料」，再到另一個版本貼進下面的框框按「匯入」，資料就搬過去了。</p>
+          <div class="cap-row"><button class="ghost" type="button" id="bk-copy">複製全部資料</button></div>
+          <label for="bk-in" class="hint">匯入資料</label>
+          <textarea id="bk-in" class="bk-area" placeholder="把複製的資料貼在這裡"></textarea>
+          <div class="cap-row"><button class="ghost" type="button" id="bk-import">匯入</button><span class="hint" id="bk-msg" aria-live="polite"></span></div>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="p-buy" class="page" hidden>
+    <div class="group" style="gap:14px">
+      <div class="ph"><span class="badge-ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 4h2.4l2.3 10.6a1.5 1.5 0 0 0 1.5 1.2h7.9a1.5 1.5 0 0 0 1.5-1.1L20.5 8H6.2"/><circle cx="9.5" cy="19.5" r="1.3"/><circle cx="17" cy="19.5" r="1.3"/></svg></span>
+        <div><h1>想買的東西</h1><p class="sub">價格可以直接點來改，買了就打勾。</p></div></div>
+      <div class="totals" id="buy-totals"></div>
+      <div class="chips" id="buy-filter" role="toolbar" aria-label="分類篩選"></div>
+      <div id="buy-list"></div>
+    </div>
+  </section>
+
+  <section id="p-trip" class="page" hidden>
+    <div class="group" style="gap:14px">
+      <div class="ph"><span class="badge-ic"><svg class="i" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 10h17M8.5 3v4M15.5 3v4"/><circle cx="8.5" cy="14.5" r=".9" fill="currentColor"/><circle cx="12" cy="14.5" r=".9" fill="currentColor"/><circle cx="15.5" cy="14.5" r=".9" fill="currentColor"/></svg></span>
+        <div><h1>行程規劃</h1><p class="sub">每段日期一張卡，安排、備註和穿搭都收在裡面。</p></div></div>
+      <div id="trip-list" class="group" style="gap:14px"></div>
+    </div>
+  </section>
+
+  <section id="p-todo" class="page" hidden>
+    <div class="group" style="gap:14px">
+      <div class="ph"><span class="badge-ic"><svg class="i" viewBox="0 0 24 24"><path d="M9.5 18h5M10.5 21h3"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.5 1.1 1.3 1.1 2.1v.1h5v-.1c0-.8.4-1.6 1.1-2.1A6 6 0 0 0 12 3z"/><path d="M12 7.5a2.5 2.5 0 0 0-2.5 2.5"/></svg></span>
+        <div><h1>想要做的事</h1><p class="sub">沒有固定日期的事，依類別收好。</p></div></div>
+      <div class="chips"><button class="chip" id="todo-open" aria-pressed="true">未完成</button><button class="chip" id="todo-all" aria-pressed="false">全部</button></div>
+      <div id="todo-list" class="group" style="gap:14px"></div>
+    </div>
+  </section>
+
+  <section id="p-board" class="page" hidden>
+    <div class="group" style="gap:14px">
+      <div class="ph"><span class="badge-ic"><svg class="i" viewBox="0 0 24 24"><path d="M5 4h14a1 1 0 0 1 1 1v9.5L14.5 20H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M14.5 20v-4.5a1 1 0 0 1 1-1H20"/><path d="M8 9h8M8 12.5h5"/></svg></span>
+        <div><h1>記事板</h1><p class="sub">運動課剩幾堂、緊急要做的事、要記住的事，都貼在這裡。</p></div></div>
+      <div class="group" style="gap:8px">
+        <h2>運動堂數<small id="pass-count"></small></h2>
+        <div id="pass-list" class="passes"></div>
+        <div id="pass-new"></div>
+      </div>
+      <div class="boards">
+        <div class="group" style="gap:8px">
+          <h2 class="urgent-h">緊急待辦<small id="urgent-count"></small></h2>
+          <form class="note-add" data-kind="urgent" autocomplete="off">
+            <label for="urgent-in" class="hint" hidden>新增緊急待辦</label>
+            <input id="urgent-in" placeholder="要趕快處理的事，例如：今天繳電話費">
+            <button class="primary urgent" type="submit">貼上</button>
+          </form>
+          <div id="urgent-list" class="cork urgent"></div>
+        </div>
+        <div class="group" style="gap:8px">
+          <h2>注意事項<small id="note-count"></small></h2>
+          <form class="note-add" data-kind="note" autocomplete="off">
+            <label for="note-in" class="hint" hidden>新增注意事項</label>
+            <input id="note-in" placeholder="要記住的事，例如：瑜珈墊要帶回家洗">
+            <button class="primary" type="submit">貼上</button>
+          </form>
+          <div id="note-list" class="cork"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<nav class="tabs" aria-label="頁面"><div class="in" role="tablist">
+  <button role="tab" data-p="add" aria-selected="true"><span class="ti"><svg class="i" viewBox="0 0 24 24"><path d="M12 5.2a3 3 0 0 0-5.4 1.3A3 3 0 0 0 4.2 9.8a3 3 0 0 0 .9 4.3 3 3 0 0 0 3 4.4 2.6 2.6 0 0 0 3.9.9 2.6 2.6 0 0 0 3.9-.9 3 3 0 0 0 3-4.4 3 3 0 0 0 .9-4.3 3 3 0 0 0-2.4-3.3A3 3 0 0 0 12 5.2z"/><path d="M12 5.2v14.2"/></svg></span>記下</button>
+  <button role="tab" data-p="buy" aria-selected="false"><span class="ti"><svg class="i" viewBox="0 0 24 24"><path d="M3 4h2.4l2.3 10.6a1.5 1.5 0 0 0 1.5 1.2h7.9a1.5 1.5 0 0 0 1.5-1.1L20.5 8H6.2"/><circle cx="9.5" cy="19.5" r="1.3"/><circle cx="17" cy="19.5" r="1.3"/></svg></span>想買<span class="badge" id="b-buy" hidden></span></button>
+  <button role="tab" data-p="trip" aria-selected="false"><span class="ti"><svg class="i" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 10h17M8.5 3v4M15.5 3v4"/><circle cx="8.5" cy="14.5" r=".9" fill="currentColor"/><circle cx="12" cy="14.5" r=".9" fill="currentColor"/><circle cx="15.5" cy="14.5" r=".9" fill="currentColor"/></svg></span>行程<span class="badge" id="b-trip" hidden></span></button>
+  <button role="tab" data-p="todo" aria-selected="false"><span class="ti"><svg class="i" viewBox="0 0 24 24"><path d="M9.5 18h5M10.5 21h3"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.5 1.1 1.3 1.1 2.1v.1h5v-.1c0-.8.4-1.6 1.1-2.1A6 6 0 0 0 12 3z"/><path d="M12 7.5a2.5 2.5 0 0 0-2.5 2.5"/></svg></span>想做<span class="badge" id="b-todo" hidden></span></button>
+  <button role="tab" data-p="board" aria-selected="false"><span class="ti"><svg class="i" viewBox="0 0 24 24"><path d="M5 4h14a1 1 0 0 1 1 1v9.5L14.5 20H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M14.5 20v-4.5a1 1 0 0 1 1-1H20"/><path d="M8 9h8M8 12.5h5"/></svg></span>記事板<span class="badge" id="b-board" hidden></span></button>
+</div></nav>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+(() => {
+  const TODO_CATS = ["工作","家務","健康","學習","人際聯絡","財務","靈感想法","其他"];
+  const BUY_CATS = ["服飾","鞋包配件","3C","美妝保養","居家生活","食品","書籍文具","其他"];
+  const SLOTS = ["上半身","下半身","連身","包包","鞋子"];
+  const SLOT_WORDS = {
+    "連身":["洋裝","連身","吊帶褲","套裝"],
+    "上半身":["上衣","襯衫","t恤","外套","毛衣","背心","帽t","針織","大衣","西裝","衛衣","罩衫"],
+    "下半身":["褲","裙"],
+    "包包":["包","托特"],
+    "鞋子":["鞋","靴","拖"]
+  };
+  const TODO_WORDS = {
+    "工作":["報告","會議","客戶","主管","提案","簡報","專案","郵件","回覆","上班","同事"],
+    "家務":["洗","打掃","倒垃圾","整理","修","繳","房東","煮"],
+    "健康":["醫生","掛號","運動","健身","牙","吃藥","體檢","跑步","瑜珈","睡"],
+    "學習":["學","讀","看書","課","研究","練習","英文","日文"],
+    "人際聯絡":["打給","電話","約","生日","媽","爸","朋友","聯絡"],
+    "財務":["帳","錢","保險","稅","轉帳","信用卡","投資","存"],
+    "靈感想法":["想法","點子","也許","靈感","如果"]
+  };
+  const BUY_WORDS = {
+    "鞋包配件":["鞋","包","帽","圍巾","項鍊","耳環","手錶","飾品"],
+    "服飾":["衣","褲","裙","外套","洋裝","襪"],
+    "3C":["耳機","手機","電腦","平板","充電","相機","螢幕","鍵盤","滑鼠"],
+    "美妝保養":["乳液","面膜","口紅","粉底","防曬","洗面","精華","香水"],
+    "居家生活":["枕","杯","鍋","收納","毛巾","燈","床","洗衣","衛生紙"],
+    "食品":["零食","咖啡","茶","餅","米","麵","水果"],
+    "書籍文具":["書","筆","本子","手帳","貼紙"]
+  };
+  const WD = ["日","一","二","三","四","五","六"];
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+  const tick = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="var(--surface)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const pad = n => String(n).padStart(2,"0");
+  const iso = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const todayISO = () => iso(new Date());
+  const md = s => { const p = s.split("-").map(Number); return `${p[1]}/${p[2]}`; };
+  const wd = s => { const [y,m,d] = s.split("-").map(Number); return WD[new Date(y,m-1,d).getDay()]; };
+  const mdw = s => `${md(s)}（${wd(s)}）`;
+  const money = n => (n == null || n === "" || isNaN(n)) ? "" : "NT$" + Number(n).toLocaleString("zh-TW");
+  const isISO = s => /^\d{4}-\d\d-\d\d$/.test(s || "");
+
+  let docs = {};
+  let store = null;
+  let sample = null;
+  let buyFilter = "全部", todoAll = false, showPast = false, editTrip = null;
+  const busy = new Set();
+
+  const byType = t => Object.entries(docs).filter(([,d]) => (d.type || "todo") === t).map(([id,d]) => ({ id, ...d }));
+  const trips = () => byType("trip").filter(t => isISO(t.start)).sort((a,b) => a.start.localeCompare(b.start));
+
+  // ---------- dates ----------
+  function inferYear(m, d){
+    const now = new Date(); let y = now.getFullYear();
+    if ((now - new Date(y, m-1, d)) / 864e5 > 60) y += 1;
+    return y;
+  }
+  function parseDates(text){
+    const re = /(\d{1,2})\s*[\/月.]\s*(\d{1,2})\s*[日號号]?(?:\s*[-~～–—到至]\s*(?:(\d{1,2})\s*[\/月.]\s*)?(\d{1,2})\s*[日號号]?)?/;
+    const m = text.match(re);
+    if (!m) return null;
+    const m1 = +m[1], d1 = +m[2];
+    if (m1 < 1 || m1 > 12 || d1 < 1 || d1 > 31) return null;
+    const y = inferYear(m1, d1);
+    const start = `${y}-${pad(m1)}-${pad(d1)}`;
+    let end = start;
+    if (m[4]){
+      const m2 = m[3] ? +m[3] : m1, d2 = +m[4];
+      if (m2 >= 1 && m2 <= 12 && d2 >= 1 && d2 <= 31){
+        end = `${m2 < m1 ? y + 1 : y}-${pad(m2)}-${pad(d2)}`;
+        if (end < start) end = start;
+      }
+    }
+    return { start, end, raw: m[0] };
+  }
+  const stripDate = (text, raw) => (raw ? text.replace(raw, "") : text).replace(/^[\s,，、:：]+/, "").trim();
+  function findTrip(start, end){
+    const list = trips();
+    return list.find(t => t.start === start && t.end === end)
+        || list.find(t => start >= t.start && start <= t.end && end <= t.end)
+        || list.find(t => start <= t.end && end >= t.start);
+  }
+  function daysOf(t){
+    const out = []; const [y,m,d] = t.start.split("-").map(Number);
+    const c = new Date(y, m-1, d);
+    while (iso(c) <= t.end && out.length < 31){ out.push(iso(c)); c.setDate(c.getDate()+1); }
+    return out;
+  }
+  const matchWords = (text, map, dflt) => { const t = text.toLowerCase(); for (const [k, ws] of Object.entries(map)) if (ws.some(w => t.includes(w))) return k; return dflt; };
+  const slotOf = text => { const t = text.toLowerCase(); for (const s of ["連身","上半身","下半身","包包","鞋子"]) if (SLOT_WORDS[s].some(w => t.includes(w))) return s; return null; };
+  const parsePrice = text => { const m = text.replace(/,/g,"").match(/(?:NT\$|\$|＄)\s*(\d+(?:\.\d+)?)|(\d+(?:\.\d+)?)\s*(?:元|塊)|(?:^|\s)(\d{2,7})(?:\s|$)/i); return m ? Number(m[1] || m[2] || m[3]) : null; };
+
+  // ---------- routing ----------
+  function fallbackPlan(text, dates, forced){
+    const body = stripDate(text, dates?.raw);
+    const price = parsePrice(body);
+    const buyish = /想買|要買|買|購|下單|入手/.test(body) || (price != null && !dates);
+    const passish = /\d+\s*堂|剩.{0,6}堂|堂數|上了一堂|上完一堂|上一堂/.test(body);
+    const noteish = /注意|提醒|備忘|記得|別忘|不要忘|密碼|緊急|很急|急件|盡快|馬上|趕快|立刻/.test(body);
+    let page = forced || (passish ? "board" : dates ? "trip" : noteish ? "board" : buyish ? "buy" : "todo");
+    if (page === "trip" && !dates) page = "todo";
+    if (page === "board") return boardFallback(text, body, dates, passish);
+    if (page === "buy"){
+      const name = body.replace(/想買|要買|買/g,"").replace(/(NT\$|\$|＄)?\s*\d[\d,]*\s*(元|塊)?/i,"").trim() || body;
+      return { page, buy: { name, price, cat: matchWords(name, BUY_WORDS, "其他") } };
+    }
+    if (page === "todo") return { page, text: body, todoCat: matchWords(body, TODO_WORDS, "其他") };
+    const t = findTrip(dates.start, dates.end);
+    if (!t){
+      const place = (body.match(/去(.{1,6}?)(?:玩|旅|$|，|,|\s)/) || [])[1] || "";
+      return { page, text: body, trip: { tripId: null, newTrip: { title: body || "新行程", place, start: dates.start, end: dates.end }, day: null, kind: "create", outfit: [] } };
+    }
+    const slot = slotOf(body);
+    const kind = /穿什麼|怎麼穿|穿搭/.test(body) && !slot ? "outfit_ask" : slot ? "outfit" : /備註|備注|記得|帶|提醒/.test(body) ? "note" : "plan";
+    const day = (dates.start === t.start && dates.end === t.end) || dates.start !== dates.end ? null : dates.start;
+    return { page, text: body, trip: { tripId: t.id, newTrip: null, day, kind, outfit: kind === "outfit" ? [{ slot, item: body }] : [] } };
+  }
+
+  const passes = () => byType("pass");
+  const urgents = () => byType("note").filter(n => n.kind === "urgent" && !n.done).sort((a,b) => b.createdAt - a.createdAt);
+  const plainNotes = () => byType("note").filter(n => n.kind !== "urgent").sort((a,b) => b.createdAt - a.createdAt);
+  const findPass = name => { const n = String(name || "").replace(/\s|課|堂/g, ""); if (!n) return null; return passes().find(p => { const m = String(p.name).replace(/\s|課|堂/g, ""); return m && (m.includes(n) || n.includes(m)); }) || null; };
+  const num = v => (v === "" || v == null || isNaN(v)) ? null : Math.max(0, Math.round(Number(v)));
+  function boardFallback(text, body, dates, passish){
+    if (!passish) return { page: "board", board: { kind: /緊急|很急|急件|盡快|馬上|趕快|立刻|今天要|今天一定|快到期/.test(body) ? "urgent" : "note", text } };
+    const use = /上了一堂|上完一堂|上一堂/.test(body);
+    const left = num((body.match(/剩\s*(\d+)/) || body.match(/(\d+)\s*堂/) || [])[1]);
+    const total = num((body.match(/共\s*(\d+)/) || body.match(/買了?\s*(\d+)/) || [])[1]);
+    const name = body.replace(/上了一堂|上完一堂|上一堂|剩下?|還有|總共|共|買了?|堂數|堂|到期|期限|為止|\d+|[\/月日號~\-到至,，、:：。]/g, "").trim() || "運動課";
+    const ex = findPass(name);
+    return { page: "board", board: { kind: "pass", passId: ex?.id || null, action: use ? "use" : ex ? "set" : "new", name, total, left, expires: dates ? dates.end : null } };
+  }
+
+  async function aiPlan(text, dates, forced){
+    if (!sample) return null;
+    const list = trips().map(t => JSON.stringify({ id: t.id, title: t.title, place: t.place, start: t.start, end: t.end })).join("\n") || "（沒有）";
+    const prompt = `今天是 ${todayISO()}（星期${WD[new Date().getDay()]}）。使用者在個人收納 App 輸入一句話，請判斷要放到哪一頁並整理成資料。
+頁面：
+- buy：想買的東西
+- trip：有日期的行程、出遊、活動，或跟某段日期有關的細節（穿搭、備註、安排）
+- todo：沒有特定日期、想做的事
+- board：記事板。緊急待辦（要盡快處理的事）、注意事項、提醒、備忘（不是要去哪裡的行程），以及運動課程或會員的堂數、到期日
+${forced ? `使用者指定放到：${forced}（page 一定要用這個）\n` : ""}使用者輸入：「${text}」
+程式解析出的日期：${dates ? `${dates.start} 到 ${dates.end}` : "沒有"}
+已存在的行程：
+${list}
+已存在的運動堂數卡：
+${passes().map(p => JSON.stringify({ id: p.id, name: p.name, total: p.total, left: p.left, expires: p.expires })).join("\n") || "（沒有）"}
+
+規則：
+1. 有日期且落在某個已存在行程的範圍內，一定放進那個行程（trip.tripId 填它的 id），不要新建。
+2. 新行程（例如「10/24-10/26 要去高雄」）：tripId 為 null，newTrip 填 title（簡短，例如「高雄三天兩夜」）、place（地點，沒有就空字串）、start、end（YYYY-MM-DD），kind 為 "create"。
+3. trip.day：細項只屬於某一天就填那天 YYYY-MM-DD；屬於整段行程（日期和行程起訖相同，或沒指定哪一天）填 null。
+4. trip.kind："outfit" 提到具體穿搭單品；"outfit_ask" 只問要穿什麼、沒提到單品；"note" 備註、提醒、要帶的東西；"plan" 要去的地方或要做的安排；"create" 只是建立行程。
+5. trip.outfit：把提到的穿搭拆成 [{"slot":"上半身|下半身|連身|包包|鞋子","item":"具體單品"}]，其他 kind 給 []。
+6. buy：name 商品名稱（不含價格）、price 數字或 null（新台幣）、cat 從 ${BUY_CATS.join("、")} 選一個。
+7. todoCat：從 ${TODO_CATS.join("、")} 選一個。
+8. text：去掉日期後的精簡內容，保留使用者的說法。
+9. board：kind 為 "urgent"（緊急待辦：提到緊急、盡快、馬上、今天一定要做的事）、"note"（注意事項、要記住的事；text 寫完整內容，日期也保留在文字裡）或 "pass"（運動堂數）。pass 要填 passId（是已存在的同一個課程就填它的 id，否則 null）、action（"new" 新的堂數卡、"set" 更新剩餘堂數或到期日、"use" 上了一堂要扣一堂）、name（課程名稱，例如「瑜珈」）、total（總堂數或 null）、left（剩餘堂數或 null）、expires（到期日 YYYY-MM-DD 或 null）。提到幾堂課、剩幾堂、上了一堂、課程到期，一律放 board。
+只回一個 JSON 物件，例如：
+{"page":"trip","text":"穿白色亞麻襯衫","todoCat":null,"buy":null,"trip":{"tripId":"t123","newTrip":null,"day":"2026-10-24","kind":"outfit","outfit":[{"slot":"上半身","item":"白色亞麻襯衫"}]}}`;
+    try {
+      const r = await sample.json(prompt, { modelTier: "quick" });
+      if (!r || !["buy","trip","todo","board"].includes(r.page)) return null;
+      if (forced && r.page !== forced) return null;
+      if (r.page === "board" && (!r.board || !["note","urgent","pass"].includes(r.board.kind))) return null;
+      if (r.page === "trip"){
+        const tr = r.trip; if (!tr) return null;
+        if (tr.tripId && !docs[tr.tripId]) tr.tripId = null;
+        if (!tr.tripId && dates){ const t = findTrip(dates.start, dates.end); if (t){ tr.tripId = t.id; tr.newTrip = null; if (tr.kind === "create") tr.kind = "note"; } }
+        if (!tr.tripId){
+          tr.newTrip = tr.newTrip || { title: r.text || "新行程", place: "" };
+          if (!isISO(tr.newTrip.start)){ if (!dates) return null; tr.newTrip.start = dates.start; tr.newTrip.end = dates.end; }
+          if (!isISO(tr.newTrip.end) || tr.newTrip.end < tr.newTrip.start) tr.newTrip.end = tr.newTrip.start;
+          const again = findTrip(tr.newTrip.start, tr.newTrip.end);
+          if (again){ tr.tripId = again.id; tr.newTrip = null; if (tr.kind === "create") tr.kind = "note"; }
+        }
+        if (tr.day && !isISO(tr.day)) tr.day = null;
+      }
+      return r;
+    } catch (e) { handleSampleError(e); return null; }
+  }
+  function handleSampleError(e){
+    if (["not_granted","sampling_disabled","not_declared","capability_disabled","capability_removed"].includes(e?.code)){
+      sample = null;
+      $("cap-hint").textContent = "目前用日期和關鍵字自動分類。文字裡寫日期也可以，像 10/24 或 10/24-26。";
+      render();
+    }
+  }
+
+  const emptyDay = () => ({ items: [], outfit: {} });
+
+  async function apply(plan, original){
+    if (plan.page === "board"){
+      const b = plan.board || {};
+      if (b.kind === "pass"){
+        const id0 = b.passId && docs[b.passId]?.type === "pass" ? b.passId : findPass(b.name)?.id;
+        if (id0){
+          const p = { ...docs[id0] };
+          if (b.action === "use") p.left = Math.max(0, (num(p.left) ?? 0) - 1);
+          else {
+            if (num(b.left) != null) p.left = num(b.left);
+            if (num(b.total) != null) p.total = num(b.total);
+            if (isISO(b.expires)) p.expires = b.expires;
+          }
+          if (num(p.total) != null && p.left > p.total) p.total = p.left;
+          await store.put(id0, p);
+          return `記事板 › ${p.name}（剩 ${p.left} 堂）`;
+        }
+        if (b.action !== "use" || num(b.left) != null){
+          const left = num(b.left), total = num(b.total);
+          const p = { type: "pass", name: b.name || "運動課", total: total ?? left ?? 0, left: left ?? total ?? 0, expires: isISO(b.expires) ? b.expires : null, createdAt: Date.now() };
+          if (p.left > p.total) p.total = p.left;
+          await store.put(uid("p"), p);
+          return `記事板 › 新的堂數卡：${p.name}（${p.left} 堂）`;
+        }
+      }
+      const kind = b.kind === "urgent" ? "urgent" : "note";
+      await store.put(uid("m"), { type: "note", kind, text: b.text || original, color: Math.floor(Math.random() * 4), done: false, createdAt: Date.now() });
+      return kind === "urgent" ? "記事板 › 緊急待辦" : "記事板 › 注意事項";
+    }
+    if (plan.page === "buy"){
+      const b = plan.buy || {};
+      const price = (b.price === "" || b.price == null || isNaN(b.price)) ? null : Number(b.price);
+      const cat = b.cat || matchWords(original, BUY_WORDS, "其他");
+      await store.put(uid("b"), { type: "buy", name: b.name || original, price, cat, done: false, createdAt: Date.now() });
+      return `想買 › ${cat}${price != null ? "（" + money(price) + "）" : ""}`;
+    }
+    if (plan.page === "todo"){
+      const cat = plan.todoCat || matchWords(original, TODO_WORDS, "其他");
+      await store.put(uid("i"), { type: "todo", text: plan.text || original, cat, done: false, createdAt: Date.now() });
+      return `想做 › ${cat}`;
+    }
+    const tr = plan.trip;
+    let tripId = tr.tripId, t;
+    if (!tripId){
+      tripId = uid("t");
+      const n = tr.newTrip;
+      t = { type: "trip", title: n.title || "新行程", place: n.place || "", start: n.start, end: n.end, days: {}, createdAt: Date.now() };
+    } else {
+      t = structuredClone(docs[tripId]); t.days = t.days || {};
+    }
+    const key = tr.day && tr.day >= t.start && tr.day <= t.end ? tr.day : "all";
+    let label = `行程 › ${t.title}${key === "all" ? "" : " › " + md(key)}`;
+    if (tr.kind === "create"){
+      label = `新行程 › ${t.title}（${md(t.start)}${t.end !== t.start ? "–" + md(t.end) : ""}）`;
+    } else {
+      const day = t.days[key] = t.days[key] || emptyDay();
+      day.outfit = day.outfit || {}; day.items = day.items || [];
+      if (tr.kind === "outfit" && Array.isArray(tr.outfit) && tr.outfit.length){
+        for (const o of tr.outfit){
+          const slot = SLOTS.includes(o.slot) ? o.slot : (slotOf(o.item || "") || "上半身");
+          day.outfit[slot] = (day.outfit[slot] || []).filter(p => !p.sug);
+          day.outfit[slot].push({ id: uid("o"), text: o.item || plan.text });
+        }
+        label += " › 穿搭";
+      } else {
+        day.items.push({ id: uid("n"), text: plan.text || original, kind: tr.kind === "note" ? "note" : "plan", done: false });
+        label += tr.kind === "note" ? " › 備註" : " › 安排";
+      }
+    }
+    await store.put(tripId, t);
+    return label;
+  }
+
+  // ---------- outfit suggestion ----------
+  async function suggestOutfit(tripId, onlyDay){
+    const t = docs[tripId]; if (!t || busy.has(tripId)) return;
+    if (!sample){ flash("要允許頁面使用 Claude 才能建議穿搭。"); return; }
+    busy.add(tripId); render();
+    const days = onlyDay ? [onlyDay] : daysOf(t);
+    const existing = {};
+    for (const d of days){ const o = t.days?.[d]?.outfit || {}; existing[d] = Object.fromEntries(SLOTS.map(s => [s, (o[s]||[]).filter(p=>!p.sug).map(p=>p.text)])); }
+    const notes = Object.entries(t.days || {}).flatMap(([k, d]) => (d.items||[]).map(i => `${k === "all" ? "整趟" : k}：${i.text}`)).join("\n") || "（沒有）";
+    const prompt = `幫使用者規劃旅遊穿搭。
+行程：${t.title}，地點：${t.place || "未填"}，日期 ${t.start} 到 ${t.end}。
+依這個地點在這個季節的一般氣候和行程活動，給每一天一套好搭、實際的穿搭，用繁體中文寫具體單品（例如「米白短袖亞麻襯衫」）。
+已經決定的單品要保留並搭配它們，只補空的欄位。「上半身＋下半身」和「連身」二選一，不要兩種都填。
+行程備註：
+${notes}
+需要建議的日期與已決定的單品：
+${JSON.stringify(existing)}
+只回 JSON：{"days":{"YYYY-MM-DD":{"上半身":["單品"],"下半身":["單品"],"連身":[],"包包":["單品"],"鞋子":["單品"]}},"tip":"一句整體提醒，例如大約氣溫、要不要帶薄外套"}`;
+    try {
+      const r = await sample.json(prompt, { modelTier: "default", cache: false });
+      const fresh = structuredClone(docs[tripId]); if (!fresh) return;
+      fresh.days = fresh.days || {};
+      for (const d of days){
+        const sug = r?.days?.[d]; if (!sug) continue;
+        const day = fresh.days[d] = fresh.days[d] || emptyDay();
+        day.outfit = day.outfit || {};
+        for (const s of SLOTS){
+          const mine = (day.outfit[s] || []).filter(p => !p.sug);
+          day.outfit[s] = mine.length ? mine : (Array.isArray(sug[s]) ? sug[s] : []).filter(Boolean).slice(0,3).map(x => ({ id: uid("o"), text: String(x), sug: true }));
+        }
+      }
+      if (r?.tip) fresh.tip = String(r.tip).slice(0, 120);
+      await store.put(tripId, fresh);
+      flash(`已幫「${fresh.title}」補上穿搭建議（虛線框的是建議）。`, true);
+    } catch (e) {
+      handleSampleError(e);
+      if (sample) flash(e?.code === "rate_limited" ? "Claude 暫時忙不過來，晚點再按一次「建議穿搭」。" : "這次沒拿到穿搭建議，可以到行程頁再按一次「建議穿搭」。");
+    } finally { busy.delete(tripId); render(); }
+  }
+
+  // ---------- capture ----------
+  let flashTimer;
+  function flash(msg, ok){ const s = $("status"); s.textContent = msg; s.className = "status" + (ok ? " ok" : ""); clearTimeout(flashTimer); flashTimer = setTimeout(() => { s.textContent = ""; }, 7000); }
+
+  $("cap-start").addEventListener("change", () => { $("cap-end").min = $("cap-start").value; if ($("cap-end").value && $("cap-end").value < $("cap-start").value) $("cap-end").value = ""; });
+
+  $("cap").addEventListener("submit", async e => {
+    e.preventDefault();
+    const ta = $("cap-text"), text = ta.value.trim();
+    if (!text){ ta.focus(); return; }
+    const s = $("cap-start").value, en = $("cap-end").value;
+    const inText = parseDates(text);
+    let dates = s ? { start: s, end: en && en >= s ? en : s, raw: inText?.raw || "" } : inText;
+    const forced = $("cap-dest").value;
+    if (forced === "trip" && !dates){ flash("放到行程需要日期：在文字裡寫日期，或填日期欄。"); return; }
+    const btn = $("cap-btn"); btn.disabled = true; btn.textContent = sample ? "整理中…" : "記下";
+    try {
+      const plan = (forced === "urgent" || forced === "note") ? { page: "board", board: { kind: forced, text } }
+        : (await aiPlan(text, dates, forced)) || fallbackPlan(text, dates, forced);
+      const label = await apply(plan, text);
+      await addLog(text, label);
+      ta.value = ""; $("cap-start").value = ""; $("cap-end").value = ""; $("cap-dest").value = "";
+      flash("已放進：" + label, true);
+    } catch (err) {
+      flash(err?.code === "quota_exceeded" ? "空間滿了，先刪掉一些完成的項目。" : "沒存成功，內容還在輸入框，再按一次「記下」。");
+    } finally { btn.disabled = false; btn.textContent = "記下"; }
+  });
+  $("past-q").addEventListener("input", e => { pastQuery = e.target.value; render(); });
+  $("cap-text").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing){ e.preventDefault(); $("cap").requestSubmit(); } });
+
+  async function addLog(text, label){
+    const log = structuredClone(docs.log?.entries || []);
+    log.unshift({ text, label, at: Date.now() });
+    await store.put("log", { type: "log", entries: log.slice(0, 20) });
+  }
+
+  // ---------- render ----------
+  function render(){
+    const buys = byType("buy"), todos = byType("todo"), ts = trips();
+    setBadge("b-buy", buys.filter(b => !b.done).length);
+    setBadge("b-todo", todos.filter(t => !t.done).length);
+    setBadge("b-trip", ts.filter(t => t.end >= todayISO()).length);
+    setBadge("b-board", urgents().length + passes().filter(passWarn).length);
+    renderBoard();
+    renderLog(); renderBuy(buys); renderTrips(ts); renderTodo(todos); renderDone();
+  }
+  const setBadge = (id, n) => { const b = $(id); b.hidden = !n; b.textContent = n; };
+
+  // 進行中／已完成：可收合的分類
+  const IC = {
+    buy: '<svg class="i" viewBox="0 0 24 24"><path d="M3 4h2.4l2.3 10.6a1.5 1.5 0 0 0 1.5 1.2h7.9a1.5 1.5 0 0 0 1.5-1.1L20.5 8H6.2"/><circle cx="9.5" cy="19.5" r="1.3"/><circle cx="17" cy="19.5" r="1.3"/></svg>',
+    trip: '<svg class="i" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 10h17M8.5 3v4M15.5 3v4"/><circle cx="8.5" cy="14.5" r=".9" fill="currentColor"/><circle cx="12" cy="14.5" r=".9" fill="currentColor"/><circle cx="15.5" cy="14.5" r=".9" fill="currentColor"/></svg>',
+    board: '<svg class="i" viewBox="0 0 24 24"><path d="M5 4h14a1 1 0 0 1 1 1v9.5L14.5 20H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M14.5 20v-4.5a1 1 0 0 1 1-1H20"/><path d="M8 9h8M8 12.5h5"/></svg>',
+    todo: '<svg class="i" viewBox="0 0 24 24"><path d="M9.5 18h5M10.5 21h3"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.5 1.1 1.3 1.1 2.1v.1h5v-.1c0-.8.4-1.6 1.1-2.1A6 6 0 0 0 12 3z"/><path d="M12 7.5a2.5 2.5 0 0 0-2.5 2.5"/></svg>'
+  };
+  const caret = '<svg class="caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  let openGroups = (() => { try { return JSON.parse(localStorage.getItem("brainbox-open") || "{}"); } catch { return {}; } })();
+  function foldHtml(groups, prefix, forceOpen){
+    return groups.filter(g => g.n).map(g => {
+      const k = prefix + g.key, open = forceOpen || !!openGroups[k];
+      return `<div class="log-group g-${g.key}">
+        <button class="log-h" data-fold="${k}" aria-expanded="${open}"><span class="gi">${IC[g.key]}</span><span>${g.name}</span><small>${g.n} 項${g.extra ? " · " + g.extra : ""}</small>${caret}</button>
+        ${open ? `<ul class="list box log">${g.rows.join("")}</ul>` : ""}</div>`;
+    }).join("");
+  }
+  function renderLog(){
+    const today = todayISO();
+    const buys = byType("buy").filter(b => !b.done).sort((a,b) => b.createdAt - a.createdAt);
+    const ts = trips().filter(t => t.end >= today);
+    const todos = byType("todo").filter(t => !t.done).sort((a,b) => (a.cat||"").localeCompare(b.cat||"") || b.createdAt - a.createdAt);
+    const ps = passes().sort((a,b) => (a.expires || "9999").localeCompare(b.expires || "9999")), us = urgents(), ns = plainNotes();
+    if (!buys.length && !ts.length && !todos.length && !ps.length && !ns.length && !us.length){ $("log").innerHTML = `<div class="empty"><strong>腦袋空空，很輕鬆</strong>在上面寫下第一件事，它會出現在對應的分類裡。</div>`; return; }
+    const check = label => `<button class="chk" data-act="toggle" aria-pressed="false" aria-label="${label}">${tick}</button>`;
+    $("log").innerHTML = foldHtml([
+      { key: "buy", name: "想買", n: buys.length, extra: buys.length ? money(buys.reduce((s,b) => s + (Number(b.price)||0), 0)) : "",
+        rows: buys.map(b => `<li data-id="${b.id}"><div class="row">${check("標為已買")}<div class="grow"><span class="t">${esc(b.name)}</span><span class="meta">${esc(b.cat || "其他")}</span></div>${b.price != null ? `<span class="meta" style="font-size:.85rem;font-variant-numeric:tabular-nums">${money(b.price)}</span>` : ""}</div></li>`) },
+      { key: "trip", name: "行程", n: ts.length, extra: "",
+        rows: ts.map(t => `<li><div class="row"><span class="tag" style="margin-top:2px;font-variant-numeric:tabular-nums">${md(t.start)}${t.end !== t.start ? "–" + md(t.end) : ""}</span><div class="grow"><span class="t">${esc(t.title)}</span>${t.place ? `<span class="meta">${esc(t.place)}</span>` : ""}</div><button class="x" data-go="trip">查看 ›</button></div></li>`) },
+      { key: "todo", name: "想做", n: todos.length, extra: "",
+        rows: todos.map(t => `<li data-id="${t.id}"><div class="row">${check("標為完成")}<div class="grow"><span class="t">${esc(t.text)}</span><span class="meta">${esc(t.cat || "其他")}</span></div></div></li>`) },
+      { key: "board", name: "記事板", n: us.length + ps.length + ns.length, extra: us.length ? us.length + " 件緊急" : ps.filter(passWarn).length ? ps.filter(passWarn).length + " 張堂數卡要注意" : "",
+        rows: [...us.map(n => `<li data-id="${n.id}"><div class="row"><button class="chk" data-act="note-done" aria-label="完成" style="--c:var(--warn)">${tick}</button><div class="grow"><span class="tag" style="--c:var(--warn);--c-soft:var(--warn-soft)">緊急</span><span class="t">${esc(n.text)}</span></div></div></li>`),
+               ...ps.map(p => `<li><div class="row"><span class="tag" style="margin-top:2px;font-variant-numeric:tabular-nums">剩 ${num(p.left) ?? 0} 堂</span><div class="grow"><span class="t">${esc(p.name)}</span><span class="meta">${dueText(p)}</span></div><button class="x" data-go="board">查看 ›</button></div></li>`),
+               ...ns.map(n => `<li><div class="row"><span class="tag" style="margin-top:2px">注意</span><div class="grow"><span class="t">${esc(n.text)}</span></div></div></li>`)] }
+    ], "", false);
+  }
+
+  // ---------- board ----------
+  let editPass = null, newPassOpen = false;
+  const daysLeft = d => { if (!isISO(d)) return null; const [y,m,dd] = d.split("-").map(Number); const t = new Date(); t.setHours(0,0,0,0); return Math.round((new Date(y, m-1, dd) - t) / 864e5); };
+  const passWarn = p => { const dl = daysLeft(p.expires); return (num(p.left) ?? 0) <= 2 || (dl != null && dl <= 14); };
+  const dueText = p => {
+    const dl = daysLeft(p.expires);
+    if (dl == null) return "沒有設定到期日";
+    if (dl < 0) return `已在 ${md(p.expires)} 到期`;
+    if (dl === 0) return "今天到期";
+    return `到 ${md(p.expires)} · 還有 ${dl} 天`;
+  };
+  function passForm(p, id){
+    return `<form class="pass-form" data-act="save-pass" data-id="${id}">
+      <label class="field" for="pf-name-${id}">課程<input id="pf-name-${id}" name="name" value="${esc(p.name || "")}" placeholder="瑜珈" required></label>
+      <label class="field" for="pf-left-${id}">剩幾堂<input id="pf-left-${id}" name="left" inputmode="numeric" value="${p.left ?? ""}" placeholder="8"></label>
+      <label class="field" for="pf-total-${id}">總共幾堂<input id="pf-total-${id}" name="total" inputmode="numeric" value="${p.total ?? ""}" placeholder="10"></label>
+      <label class="field" for="pf-exp-${id}">到期日<input id="pf-exp-${id}" name="expires" type="date" value="${p.expires || ""}"></label>
+      <div class="pass-btns"><button class="primary" type="submit">儲存</button>${id === "new" ? `<button class="x" type="button" data-act="cancel-pass">取消</button>` : `<button class="x" type="button" data-act="del-doc">刪除這張卡</button>`}</div>
+    </form>`;
+  }
+  function renderBoard(){
+    const ps = passes().sort((a,b) => (a.expires || "9999").localeCompare(b.expires || "9999"));
+    const ns = plainNotes(), us = urgents();
+    $("urgent-count").textContent = us.length ? `${us.length} 件` : "";
+    $("pass-count").textContent = ps.length ? `${ps.length} 張` : "";
+    $("note-count").textContent = ns.length ? `${ns.length} 張` : "";
+    $("pass-list").innerHTML = ps.map(p => {
+      if (editPass === p.id) return `<div class="pass" data-id="${p.id}" style="grid-column:1/-1;padding:0;border:0">${passForm(p, p.id)}</div>`;
+      const left = num(p.left) ?? 0, total = Math.max(num(p.total) ?? left, left);
+      const pct = total ? Math.round(left / total * 100) : 0;
+      return `<div class="pass${passWarn(p) ? " warn" : ""}" data-id="${p.id}">
+        <div class="pass-top"><span class="pass-name">${esc(p.name)}</span><button class="x" data-act="edit-pass">編輯</button></div>
+        <div class="pass-num"><b>${left}</b><span>/ ${total} 堂</span></div>
+        <div class="bar" role="img" aria-label="剩 ${left} 堂，共 ${total} 堂"><i style="width:${pct}%"></i></div>
+        <span class="pass-due">${dueText(p)}${left <= 2 ? " · 快用完了" : ""}</span>
+        <div class="pass-btns"><button class="ghost" data-act="pass-use"${left ? "" : " disabled"}>上了一堂 −1</button><button class="ghost" data-act="pass-add" aria-label="加回一堂">+1</button></div>
+      </div>`;
+    }).join("") || (newPassOpen ? "" : `<div class="empty" style="grid-column:1/-1"><strong>還沒有堂數卡</strong>在「記下」頁寫「瑜珈 10 堂 到 12/31」，或按下面的按鈕新增。</div>`);
+    $("pass-new").innerHTML = newPassOpen ? passForm({}, "new") : `<button class="ghost" data-act="new-pass">＋ 新增堂數卡</button>`;
+    const day = ts => `${new Date(ts).getMonth()+1}/${new Date(ts).getDate()}`;
+    $("urgent-list").innerHTML = us.map(n => `<div class="note urgent" data-id="${n.id}"><p>${esc(n.text)}</p>
+      <div class="note-foot"><button class="chk" data-act="note-done" aria-label="完成">${tick}</button><span class="meta">${day(n.createdAt)} 貼上</span><button class="x" data-act="del-doc">撕掉</button></div></div>`).join("")
+      || `<div class="empty"><strong>沒有緊急的事</strong>很好，可以喘口氣。</div>`;
+    $("note-list").innerHTML = ns.map(n => `<div class="note n${(n.color ?? 0) % 4}" data-id="${n.id}"><p>${esc(n.text)}</p>
+      <div class="note-foot"><span class="meta">${day(n.createdAt)} 貼上</span><button class="x" data-act="del-doc">撕掉</button></div></div>`).join("")
+      || `<div class="empty"><strong>板子上還空空的</strong>上面寫一句話按「貼上」，或在「記下」頁寫「提醒：…」。</div>`;
+  }
+
+  let pastQuery = "", tripCard = null;
+  const openPast = new Set();
+  function tripText(t){
+    const parts = [t.title, t.place, t.start, t.end, md(t.start), md(t.end)];
+    for (const d of Object.values(t.days || {})){
+      for (const i of d.items || []) parts.push(i.text);
+      for (const s of SLOTS) for (const p of (d.outfit?.[s] || [])) parts.push(p.text);
+    }
+    return parts.join(" ").toLowerCase();
+  }
+  function renderDone(){
+    const today = todayISO();
+    const q = pastQuery.trim().toLowerCase();
+    const hit = txt => !q || q.split(/\s+/).every(w => txt.toLowerCase().includes(w));
+    const buys = byType("buy").filter(b => b.done && hit([b.name, b.cat, b.price].join(" "))).sort((a,b) => (b.doneAt||0) - (a.doneAt||0));
+    const past = trips().filter(t => t.end < today && hit(tripText(t))).reverse();
+    const todos = [...byType("todo"), ...byType("note").filter(n => n.kind === "urgent").map(n => ({ ...n, cat: "緊急待辦" }))]
+      .filter(t => t.done && hit([t.text, t.cat].join(" "))).sort((a,b) => (b.doneAt||0) - (a.doneAt||0));
+    const when = ts => ts ? `${new Date(ts).getMonth()+1}/${new Date(ts).getDate()} 完成` : "";
+    const undo = label => `<button class="chk" data-act="toggle" aria-pressed="true" aria-label="${label}">${tick}</button>`;
+    if (!buys.length && !past.length && !todos.length){
+      $("done-list").innerHTML = q ? `<div class="empty"><strong>找不到符合的</strong>換個關鍵字試試，例如地點或月份「10/」。</div>`
+        : `<div class="empty"><strong>還沒有完成的事</strong>打勾的項目和過了日期的行程會收到這裡。</div>`;
+      return;
+    }
+    $("done-list").innerHTML = foldHtml([
+      { key: "buy", name: "已買", n: buys.length, extra: buys.length ? money(buys.reduce((s,b) => s + (Number(b.price)||0), 0)) : "",
+        rows: buys.map(b => `<li class="is-done" data-id="${b.id}"><div class="row">${undo("改回還沒買")}<div class="grow"><span class="t">${esc(b.name)}</span><span class="meta">${[esc(b.cat || "其他"), b.price != null ? money(b.price) : "", when(b.doneAt)].filter(Boolean).join(" · ")}</span></div><button class="x" data-act="del">刪除</button></div></li>`) },
+      { key: "trip", name: "過去行程", n: past.length, extra: "",
+        rows: past.map(t => `<li><div class="row"><span class="tag" style="margin-top:2px;font-variant-numeric:tabular-nums">${md(t.start)}${t.end !== t.start ? "–" + md(t.end) : ""}</span><div class="grow"><span class="t">${esc(t.title)}</span>${t.place ? `<span class="meta">${esc(t.place)}</span>` : ""}</div><button class="x" data-past="${t.id}" aria-expanded="${openPast.has(t.id)}">${openPast.has(t.id) ? "收起" : "細節 ›"}</button></div>${openPast.has(t.id) && tripCard ? `<div class="past-card">${tripCard(t)}</div>` : ""}</li>`) },
+      { key: "todo", name: "做完的事", n: todos.length, extra: "",
+        rows: todos.map(t => `<li class="is-done" data-id="${t.id}"><div class="row">${undo("改回未完成")}<div class="grow"><span class="t">${esc(t.text)}</span><span class="meta">${[esc(t.cat || "其他"), when(t.doneAt)].filter(Boolean).join(" · ")}</span></div><button class="x" data-act="del">刪除</button></div></li>`) }
+    ], "d-", !!q);
+  }
+
+  function renderBuy(buys){
+    const cats = ["全部", ...BUY_CATS.filter(c => buys.some(b => b.cat === c)), ...[...new Set(buys.map(b => b.cat))].filter(c => c && !BUY_CATS.includes(c))];
+    if (!cats.includes(buyFilter)) buyFilter = "全部";
+    $("buy-filter").innerHTML = buys.length ? cats.map(c => `<button class="chip" data-bf="${esc(c)}" aria-pressed="${c===buyFilter}">${esc(c)}</button>`).join("") : "";
+    const shown = buys.filter(b => buyFilter === "全部" || b.cat === buyFilter).sort((a,b) => (a.done - b.done) || (b.createdAt - a.createdAt));
+    const sum = arr => arr.reduce((s, b) => s + (Number(b.price) || 0), 0);
+    const open = shown.filter(b => !b.done), done = shown.filter(b => b.done);
+    $("buy-totals").innerHTML = buys.length ? `<span>還沒買 <b>${money(sum(open)) || "NT$0"}</b>（${open.length} 件）</span><span class="meta">已買 ${money(sum(done)) || "NT$0"}（${done.length} 件）</span>` : "";
+    if (!buys.length){ $("buy-list").innerHTML = `<div class="empty"><strong>還沒有想買的東西</strong>在「記下」頁寫「想買 ○○ 1200」，會自動放到這裡並記下價格和分類。</div>`; return; }
+    $("buy-list").innerHTML = `<ul class="list box">${shown.map(b => `<li class="${b.done?"is-done":""}" data-id="${b.id}"><div class="row">
+      <button class="chk" data-act="toggle" aria-pressed="${!!b.done}" aria-label="${b.done?"標為未買":"標為已買"}">${tick}</button>
+      <div class="grow"><span class="t">${esc(b.name)}</span><br>
+        <select class="mini-sel" data-act="bcat" aria-label="分類" id="bc-${b.id}">${[...new Set([...BUY_CATS, b.cat || "其他"])].map(c => `<option${c===(b.cat||"其他")?" selected":""}>${esc(c)}</option>`).join("")}</select></div>
+      <label class="price" for="bp-${b.id}">NT$<input id="bp-${b.id}" data-act="price" inputmode="numeric" placeholder="價格" value="${b.price ?? ""}"></label>
+      <button class="x" data-act="del">刪除</button>
+    </div></li>`).join("")}</ul>`;
+  }
+
+  function renderTodo(todos){
+    const shown = todoAll ? todos : todos.filter(t => !t.done);
+    if (!todos.length){ $("todo-list").innerHTML = `<div class="empty"><strong>還沒有想做的事</strong>沒有日期、也不是要買的東西，就會放到這裡。</div>`; return; }
+    if (!shown.length){ $("todo-list").innerHTML = `<div class="empty"><strong>全部做完了</strong>按「全部」可以看完成的紀錄。</div>`; return; }
+    const order = [...TODO_CATS, ...[...new Set(shown.map(t => t.cat || "其他"))].filter(c => !TODO_CATS.includes(c))];
+    $("todo-list").innerHTML = order.map(c => {
+      const g = shown.filter(t => (t.cat || "其他") === c).sort((a,b) => (a.done - b.done) || (b.createdAt - a.createdAt));
+      if (!g.length) return "";
+      return `<div class="group"><h2>${esc(c)}<small>${g.filter(t=>!t.done).length} 件待辦</small></h2><ul class="list box">${g.map(t => `<li class="${t.done?"is-done":""}" data-id="${t.id}"><div class="row">
+        <button class="chk" data-act="toggle" aria-pressed="${!!t.done}" aria-label="${t.done?"標為未完成":"標為完成"}">${tick}</button>
+        <div class="grow"><span class="t">${esc(t.text)}</span><br><select class="mini-sel" data-act="tcat" aria-label="分類" id="tc-${t.id}">${[...new Set([...TODO_CATS, t.cat || "其他"])].map(o => `<option${o===(t.cat||"其他")?" selected":""}>${esc(o)}</option>`).join("")}</select></div>
+        <button class="x" data-act="del">刪除</button></div></li>`).join("")}</ul></div>`;
+    }).join("");
+  }
+
+  function renderOutfit(o, tripId, key){
+    o = o || {};
+    const mine = s => (o[s]||[]).filter(p => !p.sug);
+    const filled = SLOTS.filter(s => mine(s).length);
+    if (!filled.length) return "";
+    return `<dl class="outfit">${filled.map(s => `<dt>${s}</dt><dd>${mine(s).map(p => `<span class="piece">${esc(p.text)}<button class="x" data-act="del-piece" data-trip="${tripId}" data-day="${p._key || key}" data-slot="${s}" data-pid="${p.id}" aria-label="刪除 ${esc(p.text)}">×</button></span>`).join("")}</dd>`).join("")}</dl>`;
+  }
+
+  function renderDay(t, key, label){
+    const body = dayBody(t, key);
+    return body ? `<div class="day"><div class="day-h">${label}</div><div class="day-body">${body}</div></div>` : "";
+  }
+  function dayBody(t, key){
+    return itemsHtml(t, key) + renderOutfit(t.days?.[key]?.outfit, t.id, key);
+  }
+  function mergedOutfit(t, keys){
+    const out = {};
+    for (const k of keys) for (const s of SLOTS) for (const p of (t.days?.[k]?.outfit?.[s] || [])) (out[s] = out[s] || []).push({ ...p, _key: k });
+    return out;
+  }
+  function itemsHtml(t, key){
+    const items = t.days?.[key]?.items || [];
+    return `${items.length ? `<ul>${items.map(i => `<li class="${i.done?"is-done":""}"><div class="row">
+        ${i.kind === "note" ? `<span class="tag" style="margin-top:3px">備註</span>` : `<button class="chk" data-act="toggle-item" data-trip="${t.id}" data-day="${key}" data-iid="${i.id}" aria-pressed="${!!i.done}" aria-label="完成">${tick}</button>`}
+        <div class="grow"><span class="t">${esc(i.text)}</span></div>
+        <button class="x" data-act="del-item" data-trip="${t.id}" data-day="${key}" data-iid="${i.id}">刪除</button></div></li>`).join("")}</ul>` : ""}`;
+  }
+
+  function renderTrips(ts){
+    const today = todayISO();
+    const up = ts.filter(t => t.end >= today), past = ts.filter(t => t.end < today).reverse();
+    const card = t => {
+      const multi = t.start !== t.end;
+      const days = daysOf(t);
+      const editing = editTrip === t.id;
+      const common = multi ? dayBody(t, "all") : itemsHtml(t, "all") + itemsHtml(t, t.start);
+      const right = multi
+        ? days.map(d => { const b = dayBody(t, d); return b ? `<div class="tday"><div class="tday-h">${mdw(d)}</div>${b}</div>` : ""; }).join("")
+        : renderOutfit(mergedOutfit(t, ["all", t.start]), t.id, t.start);
+      return `<article class="trip" data-id="${t.id}">
+        <div class="trip-grid${right ? "" : " solo"}">
+          <div class="trip-left">
+            <div class="trip-date"><b>${md(t.start)}</b><span>${multi ? "到 " + md(t.end) : "星期" + wd(t.start)}</span></div>
+            <div><div class="trip-title">${esc(t.title)}</div><span class="meta">${[t.place ? esc(t.place) : "", multi ? days.length + " 天" : ""].filter(Boolean).join(" · ")}</span></div>
+            ${common ? `<div class="trip-common">${common}</div>` : ""}
+            <div class="trip-tools">
+              <button class="ghost" data-act="edit-trip">${editing ? "收起" : "編輯"}</button>
+              <button class="x" data-act="del-trip">刪除行程</button>
+            </div>
+          </div>
+          ${right ? `<div class="trip-right">${right}</div>` : ""}
+        </div>
+        ${editing ? `<form class="edit-trip" data-act="save-trip">
+          <label class="field" for="et-title-${t.id}">名稱<input id="et-title-${t.id}" name="title" value="${esc(t.title)}"></label>
+          <label class="field" for="et-place-${t.id}">地點<input id="et-place-${t.id}" name="place" value="${esc(t.place)}"></label>
+          <label class="field" for="et-start-${t.id}">開始<input id="et-start-${t.id}" name="start" type="date" value="${t.start}"></label>
+          <label class="field" for="et-end-${t.id}">結束<input id="et-end-${t.id}" name="end" type="date" value="${t.end}"></label>
+          <button class="primary" type="submit">儲存</button></form>` : ""}
+      </article>`;
+    };
+    tripCard = card;
+    $("trip-list").innerHTML = up.length ? up.map(card).join("") : !ts.length
+      ? `<div class="empty"><strong>還沒有行程</strong>在「記下」頁寫「10/24-10/26 去高雄」，就會建立一張行程卡。之後寫「10/24 穿牛仔褲」會自動收進那一天。</div>`
+      : `<div class="empty"><strong>接下來沒有行程</strong>過了日期的行程會收到「記下」頁的「已完成」。</div>`;
+  }
+
+  // ---------- interactions ----------
+  async function editTripDoc(id, fn){ const t = structuredClone(docs[id]); if (!t) return; t.days = t.days || {}; fn(t); await store.put(id, t); }
+  function confirmClick(btn){
+    if (btn.classList.contains("confirm")) return true;
+    const orig = btn.textContent;
+    btn.classList.add("confirm"); btn.textContent = orig === "×" ? "刪？" : "確定刪除？";
+    setTimeout(() => { if (btn.isConnected){ btn.classList.remove("confirm"); btn.textContent = orig; } }, 4000);
+    return false;
+  }
+
+  document.addEventListener("click", async e => {
+    const tabBtn = e.target.closest("nav.tabs button"); if (tabBtn){ go(tabBtn.dataset.p); return; }
+    const fb = e.target.closest("[data-fold]"); if (fb){ const k = fb.dataset.fold; openGroups[k] = !openGroups[k]; try { localStorage.setItem("brainbox-open", JSON.stringify(openGroups)); } catch {} render(); return; }
+    const pb = e.target.closest("[data-past]"); if (pb){ const id = pb.dataset.past; openPast.has(id) ? openPast.delete(id) : openPast.add(id); render(); return; }
+    const gb = e.target.closest("[data-go]"); if (gb){ go(gb.dataset.go); return; }
+    const bb = e.target.closest("button[data-act]");
+    if (bb && ["new-pass","cancel-pass","edit-pass","pass-use","pass-add","del-doc","note-done"].includes(bb.dataset.act)){
+      const holder = bb.closest("[data-id]"); const id = holder?.dataset.id; const d = id ? docs[id] : null;
+      try {
+        if (bb.dataset.act === "new-pass"){ newPassOpen = true; render(); }
+        else if (bb.dataset.act === "cancel-pass"){ newPassOpen = false; render(); }
+        else if (bb.dataset.act === "edit-pass"){ editPass = id; render(); }
+        else if (bb.dataset.act === "note-done" && d){ await store.put(id, { ...d, done: true, doneAt: Date.now() }); flash("做完了，收到「已完成」。", true); }
+        else if (bb.dataset.act === "pass-use" && d){ await store.put(id, { ...d, left: Math.max(0, (num(d.left) ?? 0) - 1) }); }
+        else if (bb.dataset.act === "pass-add" && d){ const left = (num(d.left) ?? 0) + 1; await store.put(id, { ...d, left, total: Math.max(num(d.total) ?? 0, left) }); }
+        else if (bb.dataset.act === "del-doc" && d){ if (confirmClick(bb)){ if (editPass === id) editPass = null; await store.remove(id); } }
+      } catch { flash("沒存成功，再試一次。"); }
+      return;
+    }
+    const bf = e.target.closest("[data-bf]"); if (bf){ buyFilter = bf.dataset.bf; render(); return; }
+    const btn = e.target.closest("button[data-act]"); if (!btn) return;
+    const act = btn.dataset.act;
+    const li = btn.closest("li[data-id]"); const card = btn.closest("article.trip");
+    try {
+      if (act === "toggle" && li){ const d = docs[li.dataset.id]; await store.put(li.dataset.id, { ...d, done: !d.done, doneAt: d.done ? null : Date.now() }); }
+      else if (act === "del" && li){ if (confirmClick(btn)) await store.remove(li.dataset.id); }
+      else if (act === "toggle-item"){ await editTripDoc(btn.dataset.trip, t => { const it = t.days[btn.dataset.day]?.items?.find(i => i.id === btn.dataset.iid); if (it) it.done = !it.done; }); }
+      else if (act === "del-item"){ if (confirmClick(btn)) await editTripDoc(btn.dataset.trip, t => { const d = t.days[btn.dataset.day]; if (d) d.items = (d.items||[]).filter(i => i.id !== btn.dataset.iid); }); }
+      else if (act === "del-piece"){ if (confirmClick(btn)) await editTripDoc(btn.dataset.trip, t => { const o = t.days[btn.dataset.day]?.outfit; if (o) o[btn.dataset.slot] = (o[btn.dataset.slot]||[]).filter(p => p.id !== btn.dataset.pid); }); }
+      else if (act === "suggest" && card) suggestOutfit(card.dataset.id, null);
+      else if (act === "edit-trip" && card){ editTrip = editTrip === card.dataset.id ? null : card.dataset.id; render(); }
+      else if (act === "del-trip" && card){ if (confirmClick(btn)) await store.remove(card.dataset.id); }
+      else if (act === "past"){ showPast = !showPast; render(); }
+    } catch { flash("沒存成功，再試一次。"); }
+  });
+
+  document.addEventListener("submit", async e => {
+    const pf = e.target.closest("form[data-act='save-pass']");
+    if (pf){
+      e.preventDefault();
+      const v = Object.fromEntries(new FormData(pf)); const id = pf.dataset.id;
+      const left = num(v.left), total = num(v.total);
+      const body = { ...(id !== "new" ? docs[id] : { type: "pass", createdAt: Date.now() }), name: v.name.trim() || "運動課", left: left ?? total ?? 0, total: Math.max(total ?? left ?? 0, left ?? 0), expires: isISO(v.expires) ? v.expires : null };
+      try { await store.put(id === "new" ? uid("p") : id, body); editPass = null; newPassOpen = false; render(); flash("堂數卡已儲存。", true); }
+      catch { flash("沒存成功，再試一次。"); }
+      return;
+    }
+    const nf = e.target.closest("form.note-add");
+    if (nf){
+      e.preventDefault();
+      const kind = nf.dataset.kind === "urgent" ? "urgent" : "note";
+      const inp = nf.querySelector("input"), text = inp.value.trim(); if (!text) return;
+      try { await store.put(uid("m"), { type: "note", kind, text, color: plainNotes().length % 4, done: false, createdAt: Date.now() }); inp.value = ""; }
+      catch { flash("沒貼上去，再試一次。"); }
+      return;
+    }
+    const f = e.target.closest("form[data-act='save-trip']"); if (!f) return;
+    e.preventDefault();
+    const id = f.closest("article.trip").dataset.id;
+    const v = Object.fromEntries(new FormData(f));
+    if (!v.start){ flash("開始日期不能空白。"); return; }
+    editTrip = null;
+    try {
+      await editTripDoc(id, t => { t.title = v.title.trim() || t.title; t.place = v.place.trim(); t.start = v.start; t.end = v.end && v.end >= v.start ? v.end : v.start; });
+      flash("行程已更新。", true);
+    } catch { flash("沒存成功，再試一次。"); }
+  });
+
+  document.addEventListener("change", async e => {
+    const el = e.target; const li = el.closest("li[data-id]"); if (!li) return;
+    const d = docs[li.dataset.id]; if (!d) return;
+    try {
+      if (el.dataset.act === "bcat" || el.dataset.act === "tcat") await store.put(li.dataset.id, { ...d, cat: el.value });
+      else if (el.dataset.act === "price"){ const n = el.value.replace(/[^\d.]/g, ""); await store.put(li.dataset.id, { ...d, price: n === "" ? null : Number(n) }); }
+    } catch { flash("沒存成功，再試一次。"); }
+  });
+
+  $("todo-open").onclick = () => { todoAll = false; $("todo-open").setAttribute("aria-pressed","true"); $("todo-all").setAttribute("aria-pressed","false"); render(); };
+  $("todo-all").onclick = () => { todoAll = true; $("todo-all").setAttribute("aria-pressed","true"); $("todo-open").setAttribute("aria-pressed","false"); render(); };
+
+  function go(p){
+    document.querySelectorAll(".page").forEach(s => s.hidden = s.id !== "p-" + p);
+    document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.p === p)));
+    window.scrollTo(0, 0);
+  }
+
+  // ---------- backup ----------
+  $("bk-copy").addEventListener("click", async () => {
+    const json = JSON.stringify({ app: "brainbox", v: 1, docs });
+    const n = Object.keys(docs).length;
+    try { await navigator.clipboard.writeText(json); $("bk-msg").textContent = `已複製 ${n} 筆資料，可以去另一個版本貼上了。`; }
+    catch { const ta = $("bk-in"); ta.value = json; ta.focus(); ta.select(); $("bk-msg").textContent = "沒辦法自動複製，資料已放進框框並選取好，請長按或按 Ctrl+C 複製。"; }
+  });
+  $("bk-import").addEventListener("click", async () => {
+    let data;
+    try { data = JSON.parse($("bk-in").value.trim()); } catch { $("bk-msg").textContent = "格式不對，請貼上用「複製全部資料」拿到的完整內容。"; return; }
+    const src = data && typeof data.docs === "object" ? data.docs : null;
+    if (!src){ $("bk-msg").textContent = "格式不對，請貼上用「複製全部資料」拿到的完整內容。"; return; }
+    let added = 0, skipped = 0;
+    $("bk-import").disabled = true;
+    try {
+      for (const [k, v] of Object.entries(src)){
+        if (!v || typeof v !== "object" || !/^[\w.~:@+-]{1,200}$/.test(k)) { skipped++; continue; }
+        if (docs[k]) { skipped++; continue; }
+        await store.put(k, v); added++;
+      }
+      $("bk-in").value = "";
+      $("bk-msg").textContent = `匯入 ${added} 筆${skipped ? `，${skipped} 筆已經有了所以略過` : ""}。`;
+    } catch { $("bk-msg").textContent = `匯入到一半失敗了（已匯入 ${added} 筆），再按一次「匯入」會接著匯入剩下的。`; }
+    finally { $("bk-import").disabled = false; }
+  });
+
+  // ---------- storage ----------
+  function localStore(){
+    const KEY = "brainbox-docs";
+    try { docs = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch { docs = {}; }
+    const save = () => { try { localStorage.setItem(KEY, JSON.stringify(docs)); } catch {} render(); };
+    return { put: async (id, body) => { docs[id] = body; save(); }, remove: async id => { delete docs[id]; save(); } };
+  }
+  let unsub = null;
+  function setAcct(state, user){
+    const box = $("acct"), txt = $("acct-txt"), btn = $("acct-btn");
+    box.classList.toggle("warn", state === "off");
+    btn.hidden = state === "local" || state === "off";
+    if (state === "local") txt.textContent = "資料存在這台裝置（還沒設定同步）";
+    else if (state === "off") txt.textContent = "同步連不上，暫時存在這台裝置";
+    else if (state === "out"){ txt.textContent = "登入後手機和電腦會同步"; btn.textContent = "用 Google 登入"; }
+    else { txt.textContent = "已同步：" + (user.email || user.displayName || "Google 帳號"); btn.textContent = "登出"; }
+    btn.dataset.state = state;
+  }
+  async function initStore(){
+    store = localStore(); render();
+    const cfg = window.FIREBASE_CONFIG;
+    if (!cfg || !cfg.apiKey || !window.firebase){ setAcct("local"); return; }
+    try {
+      firebase.initializeApp(cfg);
+      const auth = firebase.auth(), fs = firebase.firestore();
+      fs.settings({ ignoreUndefinedProperties: true });
+      fs.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+      auth.getRedirectResult().catch(e => flash("登入沒有成功：" + (e?.message || "再試一次")));
+      $("acct-btn").addEventListener("click", async () => {
+        if ($("acct-btn").dataset.state === "in"){ await auth.signOut(); return; }
+        const provider = new firebase.auth.GoogleAuthProvider();
+        try { await auth.signInWithPopup(provider); }
+        catch (e) {
+          if (["auth/popup-blocked","auth/operation-not-supported-in-this-environment","auth/cancelled-popup-request"].includes(e?.code)) auth.signInWithRedirect(provider);
+          else if (e?.code !== "auth/popup-closed-by-user") flash("登入沒有成功：" + (e?.message || "再試一次"));
+        }
+      });
+      auth.onAuthStateChanged(async u => {
+        if (unsub){ unsub(); unsub = null; }
+        if (!u){ store = localStore(); render(); setAcct("out"); return; }
+        setAcct("in", u);
+        const col = fs.collection("users").doc(u.uid).collection("docs");
+        let localDocs = {}; try { localDocs = JSON.parse(localStorage.getItem("brainbox-docs") || "{}"); } catch {}
+        try {
+          const first = await col.limit(1).get();
+          if (first.empty && Object.keys(localDocs).length){
+            const batch = fs.batch();
+            for (const [k, v] of Object.entries(localDocs)) batch.set(col.doc(k), v);
+            await batch.commit();
+            flash(`已把這台裝置的 ${Object.keys(localDocs).length} 筆資料上傳到雲端。`, true);
+          }
+        } catch {}
+        store = {
+          put: async (k, body) => { docs[k] = body; render(); await col.doc(k).set(body); },
+          remove: async k => { delete docs[k]; render(); await col.doc(k).delete(); }
+        };
+        unsub = col.onSnapshot(snap => {
+          const next = {}; snap.forEach(d => { next[d.id] = d.data(); });
+          docs = next; render();
+        }, () => { setAcct("off"); flash("同步連不上，重新整理頁面再試一次。"); });
+      });
+    } catch { setAcct("off"); }
+  }
+
+  const h = (location.hash || "").slice(1); if (["add","buy","trip","todo","board"].includes(h)) go(h);
+  initStore();
+  $("cap-hint").textContent = "用日期和關鍵字自動分類。文字裡寫日期也可以，像 10/24 或 10/24-26。同一段日期的事會自動收進同一個行程。";
+})();
+</script>
+
+</body>
+</html>
