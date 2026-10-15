@@ -1,6 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <rect width="512" height="512" fill="#ffffff"/>
-  <g transform="translate(256 262) scale(2.55) translate(-55 -48)">
+  <rect x="36" y="36" width="440" height="440" rx="96" fill="#f9e0c8"/>
+  <g transform="translate(256 262) scale(3.35) translate(-58 -46)">
     <g fill="#ffb3c8">
       <circle cx="34" cy="40" r="20"/><circle cx="55" cy="30" r="22"/><circle cx="76" cy="40" r="20"/>
       <circle cx="31" cy="60" r="18"/><circle cx="55" cy="62" r="22"/><circle cx="79" cy="60" r="18"/>
