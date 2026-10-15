@@ -211,6 +211,13 @@ h2.urgent-h{color:var(--warn)}
 .acct.warn{border-color:var(--warn);color:var(--warn)}
 .acct .ghost{padding:4px 12px;white-space:nowrap}
 
+/* inline edit */
+[data-ef]{cursor:text;border-radius:6px;transition:background .15s}
+[data-ef]:hover{background:color-mix(in srgb,var(--c,var(--accent)) 12%,transparent)}
+.inline-edit{width:100%;font:inherit;color:var(--ink);background:var(--surface);border:1.5px solid var(--c,var(--accent));border-radius:10px;padding:3px 8px;outline:none;resize:vertical}
+textarea.inline-edit{min-height:64px}
+.piece .inline-edit{width:9em;padding:0 6px;border-radius:999px}
+
 /* tab bar */
 nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--surface);border-top:1.5px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);border-radius:20px 20px 0 0}
 nav.tabs .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
@@ -299,7 +306,7 @@ nav.tabs .badge{position:absolute;top:3px;left:calc(50% + 9px);font-size:.65rem;
   <section id="p-buy" class="page" hidden>
     <div class="group" style="gap:14px">
       <div class="ph"><span class="badge-ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 4h2.4l2.3 10.6a1.5 1.5 0 0 0 1.5 1.2h7.9a1.5 1.5 0 0 0 1.5-1.1L20.5 8H6.2"/><circle cx="9.5" cy="19.5" r="1.3"/><circle cx="17" cy="19.5" r="1.3"/></svg></span>
-        <div><h1>想買的東西</h1><p class="sub">價格可以直接點來改，買了就打勾。</p></div></div>
+        <div><h1>想買的東西</h1><p class="sub">點品名或價格就能直接修改，買了就打勾。</p></div></div>
       <div class="totals" id="buy-totals"></div>
       <div class="chips" id="buy-filter" role="toolbar" aria-label="分類篩選"></div>
       <div id="buy-list"></div>
@@ -309,7 +316,7 @@ nav.tabs .badge{position:absolute;top:3px;left:calc(50% + 9px);font-size:.65rem;
   <section id="p-trip" class="page" hidden>
     <div class="group" style="gap:14px">
       <div class="ph"><span class="badge-ic"><svg class="i" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 10h17M8.5 3v4M15.5 3v4"/><circle cx="8.5" cy="14.5" r=".9" fill="currentColor"/><circle cx="12" cy="14.5" r=".9" fill="currentColor"/><circle cx="15.5" cy="14.5" r=".9" fill="currentColor"/></svg></span>
-        <div><h1>行程規劃</h1><p class="sub">每段日期一張卡，安排、備註和穿搭都收在裡面。</p></div></div>
+        <div><h1>行程規劃</h1><p class="sub">每段日期一張卡，點任何文字都能直接修改。</p></div></div>
       <div id="trip-list" class="group" style="gap:14px"></div>
     </div>
   </section>
@@ -317,7 +324,7 @@ nav.tabs .badge{position:absolute;top:3px;left:calc(50% + 9px);font-size:.65rem;
   <section id="p-todo" class="page" hidden>
     <div class="group" style="gap:14px">
       <div class="ph"><span class="badge-ic"><svg class="i" viewBox="0 0 24 24"><path d="M9.5 18h5M10.5 21h3"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.5 1.1 1.3 1.1 2.1v.1h5v-.1c0-.8.4-1.6 1.1-2.1A6 6 0 0 0 12 3z"/><path d="M12 7.5a2.5 2.5 0 0 0-2.5 2.5"/></svg></span>
-        <div><h1>想要做的事</h1><p class="sub">沒有固定日期的事，依類別收好。</p></div></div>
+        <div><h1>想要做的事</h1><p class="sub">沒有固定日期的事，依類別收好，點文字就能修改。</p></div></div>
       <div class="chips"><button class="chip" id="todo-open" aria-pressed="true">未完成</button><button class="chip" id="todo-all" aria-pressed="false">全部</button></div>
       <div id="todo-list" class="group" style="gap:14px"></div>
     </div>
@@ -712,7 +719,9 @@ ${JSON.stringify(existing)}
   }
 
   // ---------- render ----------
-  function render(){
+  let inlineEdit = null, renderPending = false;
+  function render(){ if (inlineEdit){ renderPending = true; return; } renderAll(); }
+  function renderAll(){
     const buys = byType("buy"), todos = byType("todo"), ts = trips();
     setBadge("b-buy", buys.filter(b => !b.done).length);
     setBadge("b-todo", todos.filter(t => !t.done).length);
@@ -802,10 +811,10 @@ ${JSON.stringify(existing)}
     }).join("") || (newPassOpen ? "" : `<div class="empty" style="grid-column:1/-1"><strong>還沒有堂數卡</strong>在「記下」頁寫「瑜珈 10 堂 到 12/31」，或按下面的按鈕新增。</div>`);
     $("pass-new").innerHTML = newPassOpen ? passForm({}, "new") : `<button class="ghost" data-act="new-pass">＋ 新增堂數卡</button>`;
     const day = ts => `${new Date(ts).getMonth()+1}/${new Date(ts).getDate()}`;
-    $("urgent-list").innerHTML = us.map(n => `<div class="note urgent" data-id="${n.id}"><p>${esc(n.text)}</p>
+    $("urgent-list").innerHTML = us.map(n => `<div class="note urgent" data-id="${n.id}"><p data-ef="text" title="點一下修改">${esc(n.text)}</p>
       <div class="note-foot"><button class="chk" data-act="note-done" aria-label="完成">${tick}</button><span class="meta">${day(n.createdAt)} 貼上</span><button class="x" data-act="del-doc">撕掉</button></div></div>`).join("")
       || `<div class="empty"><strong>沒有緊急的事</strong>很好，可以喘口氣。</div>`;
-    $("note-list").innerHTML = ns.map(n => `<div class="note n${(n.color ?? 0) % 4}" data-id="${n.id}"><p>${esc(n.text)}</p>
+    $("note-list").innerHTML = ns.map(n => `<div class="note n${(n.color ?? 0) % 4}" data-id="${n.id}"><p data-ef="text" title="點一下修改">${esc(n.text)}</p>
       <div class="note-foot"><span class="meta">${day(n.createdAt)} 貼上</span><button class="x" data-act="del-doc">撕掉</button></div></div>`).join("")
       || `<div class="empty"><strong>板子上還空空的</strong>上面寫一句話按「貼上」，或在「記下」頁寫「提醒：…」。</div>`;
   }
@@ -856,7 +865,7 @@ ${JSON.stringify(existing)}
     if (!buys.length){ $("buy-list").innerHTML = `<div class="empty"><strong>還沒有想買的東西</strong>在「記下」頁寫「想買 ○○ 1200」，會自動放到這裡並記下價格和分類。</div>`; return; }
     $("buy-list").innerHTML = `<ul class="list box">${shown.map(b => `<li class="${b.done?"is-done":""}" data-id="${b.id}"><div class="row">
       <button class="chk" data-act="toggle" aria-pressed="${!!b.done}" aria-label="${b.done?"標為未買":"標為已買"}">${tick}</button>
-      <div class="grow"><span class="t">${esc(b.name)}</span><br>
+      <div class="grow"><span class="t" data-ef="name" title="點一下修改">${esc(b.name)}</span><br>
         <select class="mini-sel" data-act="bcat" aria-label="分類" id="bc-${b.id}">${[...new Set([...BUY_CATS, b.cat || "其他"])].map(c => `<option${c===(b.cat||"其他")?" selected":""}>${esc(c)}</option>`).join("")}</select></div>
       <label class="price" for="bp-${b.id}">NT$<input id="bp-${b.id}" data-act="price" inputmode="numeric" placeholder="價格" value="${b.price ?? ""}"></label>
       <button class="x" data-act="del">刪除</button>
@@ -873,7 +882,7 @@ ${JSON.stringify(existing)}
       if (!g.length) return "";
       return `<div class="group"><h2>${esc(c)}<small>${g.filter(t=>!t.done).length} 件待辦</small></h2><ul class="list box">${g.map(t => `<li class="${t.done?"is-done":""}" data-id="${t.id}"><div class="row">
         <button class="chk" data-act="toggle" aria-pressed="${!!t.done}" aria-label="${t.done?"標為未完成":"標為完成"}">${tick}</button>
-        <div class="grow"><span class="t">${esc(t.text)}</span><br><select class="mini-sel" data-act="tcat" aria-label="分類" id="tc-${t.id}">${[...new Set([...TODO_CATS, t.cat || "其他"])].map(o => `<option${o===(t.cat||"其他")?" selected":""}>${esc(o)}</option>`).join("")}</select></div>
+        <div class="grow"><span class="t" data-ef="text" title="點一下修改">${esc(t.text)}</span><br><select class="mini-sel" data-act="tcat" aria-label="分類" id="tc-${t.id}">${[...new Set([...TODO_CATS, t.cat || "其他"])].map(o => `<option${o===(t.cat||"其他")?" selected":""}>${esc(o)}</option>`).join("")}</select></div>
         <button class="x" data-act="del">刪除</button></div></li>`).join("")}</ul></div>`;
     }).join("");
   }
@@ -883,7 +892,7 @@ ${JSON.stringify(existing)}
     const mine = s => (o[s]||[]).filter(p => !p.sug);
     const filled = SLOTS.filter(s => mine(s).length);
     if (!filled.length) return "";
-    return `<dl class="outfit">${filled.map(s => `<dt>${s}</dt><dd>${mine(s).map(p => `<span class="piece">${esc(p.text)}<button class="x" data-act="del-piece" data-trip="${tripId}" data-day="${p._key || key}" data-slot="${s}" data-pid="${p.id}" aria-label="刪除 ${esc(p.text)}">×</button></span>`).join("")}</dd>`).join("")}</dl>`;
+    return `<dl class="outfit">${filled.map(s => `<dt>${s}</dt><dd>${mine(s).map(p => `<span class="piece"><span data-ef="piece" data-trip="${tripId}" data-day="${p._key || key}" data-slot="${s}" data-pid="${p.id}" title="點一下修改">${esc(p.text)}</span><button class="x" data-act="del-piece" data-trip="${tripId}" data-day="${p._key || key}" data-slot="${s}" data-pid="${p.id}" aria-label="刪除 ${esc(p.text)}">×</button></span>`).join("")}</dd>`).join("")}</dl>`;
   }
 
   function renderDay(t, key, label){
@@ -902,7 +911,7 @@ ${JSON.stringify(existing)}
     const items = t.days?.[key]?.items || [];
     return `${items.length ? `<ul>${items.map(i => `<li class="${i.done?"is-done":""}"><div class="row">
         ${i.kind === "note" ? `<span class="tag" style="margin-top:3px">備註</span>` : `<button class="chk" data-act="toggle-item" data-trip="${t.id}" data-day="${key}" data-iid="${i.id}" aria-pressed="${!!i.done}" aria-label="完成">${tick}</button>`}
-        <div class="grow"><span class="t">${esc(i.text)}</span></div>
+        <div class="grow"><span class="t" data-ef="item" data-trip="${t.id}" data-day="${key}" data-iid="${i.id}" title="點一下修改">${esc(i.text)}</span></div>
         <button class="x" data-act="del-item" data-trip="${t.id}" data-day="${key}" data-iid="${i.id}">刪除</button></div></li>`).join("")}</ul>` : ""}`;
   }
 
@@ -921,7 +930,7 @@ ${JSON.stringify(existing)}
         <div class="trip-grid${right ? "" : " solo"}">
           <div class="trip-left">
             <div class="trip-date"><b>${md(t.start)}</b><span>${multi ? "到 " + md(t.end) : "星期" + wd(t.start)}</span></div>
-            <div><div class="trip-title">${esc(t.title)}</div><span class="meta">${[t.place ? esc(t.place) : "", multi ? days.length + " 天" : ""].filter(Boolean).join(" · ")}</span></div>
+            <div><div class="trip-title" data-ef="title" title="點一下修改">${esc(t.title)}</div><span class="meta">${[t.place ? esc(t.place) : "", multi ? days.length + " 天" : ""].filter(Boolean).join(" · ")}</span></div>
             ${common ? `<div class="trip-common">${common}</div>` : ""}
             <div class="trip-tools">
               <button class="ghost" data-act="edit-trip">${editing ? "收起" : "編輯"}</button>
@@ -1038,6 +1047,52 @@ ${JSON.stringify(existing)}
     document.querySelectorAll(".page").forEach(s => s.hidden = s.id !== "p-" + p);
     document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.p === p)));
     window.scrollTo(0, 0);
+  }
+
+  // ---------- inline edit ----------
+  document.addEventListener("click", e => {
+    const el = e.target.closest("[data-ef]");
+    if (!el || inlineEdit || e.target.closest("button,select,input,textarea")) return;
+    startInline(el);
+  });
+  function startInline(el){
+    const multi = el.tagName === "P";
+    const box = document.createElement(multi ? "textarea" : "input");
+    box.className = "inline-edit"; box.value = el.textContent; box.setAttribute("aria-label", "修改內容");
+    inlineEdit = { el, box, done: false };
+    el.hidden = true; el.after(box); box.focus();
+    try { box.setSelectionRange(box.value.length, box.value.length); } catch {}
+    box.addEventListener("keydown", ev => {
+      if (ev.isComposing) return;
+      if (ev.key === "Escape"){ ev.preventDefault(); finishInline(false); }
+      else if (ev.key === "Enter" && !(multi && ev.shiftKey)){ ev.preventDefault(); finishInline(true); }
+    });
+    box.addEventListener("blur", () => finishInline(true));
+  }
+  async function finishInline(save){
+    const cur = inlineEdit; if (!cur || cur.done) return;
+    cur.done = true;
+    const { el, box } = cur, val = box.value.trim(), before = el.textContent;
+    inlineEdit = null;
+    box.remove(); el.hidden = false;
+    if (save && val && val !== before){
+      el.textContent = val;
+      try { await saveInline(el, val); flash("已修改。", true); }
+      catch { el.textContent = before; flash("沒存成功，再試一次。"); }
+    } else if (save && !val) flash("內容不能空白，維持原本的文字。");
+    if (renderPending){ renderPending = false; renderAll(); }
+  }
+  async function saveInline(el, val){
+    const ef = el.dataset.ef;
+    if (ef === "item"){
+      await editTripDoc(el.dataset.trip, t => { const it = t.days[el.dataset.day]?.items?.find(i => i.id === el.dataset.iid); if (it) it.text = val; });
+    } else if (ef === "piece"){
+      await editTripDoc(el.dataset.trip, t => { const pc = t.days[el.dataset.day]?.outfit?.[el.dataset.slot]?.find(q => q.id === el.dataset.pid); if (pc) pc.text = val; });
+    } else {
+      const holder = el.closest("[data-id]"); const id = holder?.dataset.id; const d = id && docs[id];
+      if (!d) throw new Error("missing");
+      await store.put(id, { ...d, [ef]: val });
+    }
   }
 
   // ---------- backup ----------
