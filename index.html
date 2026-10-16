@@ -1135,6 +1135,7 @@ ${JSON.stringify(existing)}
     btn.hidden = state === "local" || state === "off";
     if (state === "local") txt.textContent = "資料存在這台裝置（還沒設定同步）";
     else if (state === "off") txt.textContent = "同步連不上，暫時存在這台裝置";
+    else if (state === "err"){ box.classList.add("warn"); txt.textContent = "⚠ " + user; btn.hidden = false; btn.textContent = "登出"; btn.dataset.state = "in"; return; }
     else if (state === "out"){ txt.textContent = "登入後手機和電腦會同步"; btn.textContent = "用 Google 登入"; }
     else { txt.textContent = "已同步：" + (user.email || user.displayName || "Google 帳號"); btn.textContent = "登出"; }
     btn.dataset.state = state;
@@ -1173,14 +1174,34 @@ ${JSON.stringify(existing)}
             flash(`已把這台裝置的 ${Object.keys(localDocs).length} 筆資料上傳到雲端。`, true);
           }
         } catch {}
-        store = {
-          put: async (k, body) => { docs[k] = body; render(); await col.doc(k).set(body); },
-          remove: async k => { delete docs[k]; render(); await col.doc(k).delete(); }
+        // 每筆修改先記在這台裝置，雲端確認存好才清掉；雲端失敗也不會讓資料消失
+        const PKEY = "brainbox-pending-" + u.uid;
+        const readP = () => { try { return JSON.parse(localStorage.getItem(PKEY) || "{}"); } catch { return {}; } };
+        const writeP = o => { try { localStorage.setItem(PKEY, JSON.stringify(o)); } catch {} };
+        const why = e => {
+          const c = String(e?.code || "");
+          if (c.includes("permission")) return "雲端拒絕存檔：請確認 Firestore 的「規則」已按「發布」";
+          if (c.includes("not-found")) return "找不到雲端資料庫：請確認 Firestore Database 已建立";
+          if (c.includes("unavailable")) return "暫時連不上網路，恢復連線後會自動補存";
+          return "雲端存檔失敗（" + (c || e?.message || "未知錯誤") + "），資料先存在這台裝置";
         };
+        const send = async (k, op) => {
+          try {
+            if (op.op === "del") await col.doc(k).delete(); else await col.doc(k).set(op.body);
+            const p = readP(); if (JSON.stringify(p[k]) === JSON.stringify(op)) { delete p[k]; writeP(p); }
+            setAcct("in", u);
+          } catch (e) { setAcct("err", why(e)); flash(why(e)); }
+        };
+        store = {
+          put: async (k, body) => { docs[k] = body; const op = { op: "put", body }; const p = readP(); p[k] = op; writeP(p); render(); send(k, op); },
+          remove: async k => { delete docs[k]; const op = { op: "del" }; const p = readP(); p[k] = op; writeP(p); render(); send(k, op); }
+        };
+        for (const [k, op] of Object.entries(readP())) send(k, op);
         unsub = col.onSnapshot(snap => {
           const next = {}; snap.forEach(d => { next[d.id] = d.data(); });
+          for (const [k, op] of Object.entries(readP())){ if (op.op === "del") delete next[k]; else next[k] = op.body; }
           docs = next; render();
-        }, () => { setAcct("off"); flash("同步連不上，重新整理頁面再試一次。"); });
+        }, e => { setAcct("err", why(e)); flash(why(e)); });
       });
     } catch { setAcct("off"); }
   }
