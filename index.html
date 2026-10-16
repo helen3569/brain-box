@@ -218,6 +218,12 @@ h2.urgent-h{color:var(--warn)}
 textarea.inline-edit{min-height:64px}
 .piece .inline-edit{width:9em;padding:0 6px;border-radius:999px}
 
+/* sync */
+.sync-code{display:block;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.9rem;letter-spacing:.04em;background:var(--bg);border:1.5px dashed var(--line);border-radius:12px;padding:8px 12px;overflow-wrap:anywhere;user-select:all}
+.bk-hr{border:0;border-top:1.5px dashed var(--line);margin:6px 0}
+.acct.ok{border-color:var(--board)}
+.acct.ok span{color:var(--board)}
+
 /* drop zone */
 .drop{display:flex;flex-direction:column;align-items:center;gap:2px;padding:18px 12px;border:2px dashed var(--line);border-radius:var(--r);background:var(--bg);cursor:pointer;text-align:center}
 .drop b{font-family:var(--f-display);font-weight:400;font-size:1rem}
@@ -284,7 +290,7 @@ nav.tabs .badge{position:absolute;top:3px;left:calc(50% + 9px);font-size:.65rem;
       </form>
       </div>
       <div class="status" id="status" aria-live="polite"></div>
-      <div class="acct" id="acct"><span id="acct-txt">資料存在這台裝置</span><button class="ghost" type="button" id="acct-btn">備份</button></div>
+      <div class="acct" id="acct"><span id="acct-txt">同步中…</span><button class="ghost" type="button" id="acct-btn">同步設定</button></div>
       <div class="group" style="gap:8px">
         <h2>進行中</h2>
         <div id="log" class="fold"></div>
@@ -296,9 +302,16 @@ nav.tabs .badge{position:absolute;top:3px;left:calc(50% + 9px);font-size:.65rem;
         <div id="done-list" class="fold"></div>
       </div>
       <details class="backup" id="backup">
-        <summary>備份與搬家</summary>
+        <summary>同步與備份</summary>
         <div class="stack">
-          <p class="hint">資料只存在這台裝置。要搬到另一台：先在這裡按「下載備份檔」，再到另一台把檔案拖進下面的框框（手機就點框框選檔案）。</p>
+          <p class="hint" style="margin:0"><b>同步碼</b>：每台裝置用同一組同步碼，資料就會自動同步，不用登入。</p>
+          <code class="sync-code" id="sync-code">—</code>
+          <div class="cap-row"><button class="primary" type="button" id="sync-copy" style="margin:0">複製同步連結</button></div>
+          <p class="hint" style="margin:0">把這個連結傳到手機或其他電腦，打開一次就會連上，之後直接開網站就好。連結請不要給別人，拿到的人也看得到你的資料。</p>
+          <label for="sync-in" class="hint">或在這裡貼上其他裝置的同步碼</label>
+          <div class="cap-row"><input id="sync-in" class="search" style="flex:1;min-width:0" placeholder="貼上同步碼" autocomplete="off"><button class="ghost" type="button" id="sync-set">改用這組</button></div>
+          <hr class="bk-hr">
+          <p class="hint" style="margin:0"><b>備份檔</b>：想留一份存檔，或同步出問題時用。在一台按「下載備份檔」，到另一台把檔案拖進框框（手機就點框框選檔案）。</p>
           <div class="cap-row"><button class="primary" type="button" id="bk-file" style="margin:0">下載備份檔</button><button class="ghost" type="button" id="bk-copy">複製全部資料</button></div>
           <label class="drop" id="bk-drop" for="bk-pick"><b>把備份檔拖進這裡</b><span class="hint">或點一下選擇檔案</span><input id="bk-pick" type="file" accept=".json,application/json,text/plain" hidden></label>
           <label class="hint" for="bk-replace"><input type="checkbox" id="bk-replace"> 整份取代：清掉這台裝置原本的資料，完全換成備份檔的內容</label>
@@ -385,6 +398,9 @@ nav.tabs .badge{position:absolute;top:3px;left:calc(50% + 9px);font-size:.65rem;
   <button role="tab" data-p="board" aria-selected="false"><span class="ti"><svg class="i" viewBox="0 0 24 24"><path d="M5 4h14a1 1 0 0 1 1 1v9.5L14.5 20H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M14.5 20v-4.5a1 1 0 0 1 1-1H20"/><path d="M8 9h8M8 12.5h5"/></svg></span>記事板<span class="badge" id="b-board" hidden></span></button>
 </div></nav>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
 <script>
 (() => {
   const TODO_CATS = ["工作","家務","健康","學習","人際聯絡","財務","靈感想法","其他"];
@@ -1108,13 +1124,18 @@ ${JSON.stringify(existing)}
   // ---------- backup ----------
   const BK_TIME = "brainbox-last-backup";
   const stamp = () => { const d = new Date(); return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}`; };
+  let syncState = "connecting", syncMsg = "";
+  function setSync(state, msg){ syncState = state; syncMsg = msg || ""; showBackupAge(); }
   function showBackupAge(){
-    let t = 0; try { t = Number(localStorage.getItem(BK_TIME)) || 0; } catch {}
     const n = Object.keys(docs).filter(k => k !== "log").length;
-    const age = t ? Math.floor((Date.now() - t) / 864e5) : null;
-    $("acct-txt").textContent = `資料存在這台裝置 · ${n} 筆 · ` + (age == null ? "還沒備份過" : age === 0 ? "今天備份過" : `上次備份 ${age} 天前`);
+    const box = $("acct"), txt = $("acct-txt");
+    box.classList.toggle("ok", syncState === "ok");
+    box.classList.toggle("warn", syncState === "err" || syncState === "local");
+    txt.textContent = syncState === "ok" ? `已同步 · ${n} 筆`
+      : syncState === "connecting" ? "同步中…"
+      : syncState === "local" ? `沒有連上同步，資料先存在這台裝置 · ${n} 筆`
+      : "⚠ " + syncMsg;
   }
-  $("acct-btn").addEventListener("click", () => { $("backup").open = true; $("backup").scrollIntoView({ behavior: "smooth", block: "start" }); });
   $("bk-file").addEventListener("click", () => {
     const json = JSON.stringify({ app: "brainbox", v: 1, savedAt: new Date().toISOString(), docs }, null, 1);
     const url = URL.createObjectURL(new Blob([json], { type: "application/json" }));
@@ -1122,7 +1143,7 @@ ${JSON.stringify(existing)}
     document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000);
     try { localStorage.setItem(BK_TIME, String(Date.now())); } catch {}
     showBackupAge();
-    $("bk-msg").textContent = "備份檔已下載，到另一台裝置把它拖進框框就能更新。";
+    $("bk-msg").textContent = "備份檔已下載。";
   });
   $("bk-copy").addEventListener("click", async () => {
     const json = JSON.stringify({ app: "brainbox", v: 1, docs });
@@ -1143,8 +1164,9 @@ ${JSON.stringify(existing)}
       if (next[k]) updated++; else added++;
       next[k] = v;
     }
-    docs = next;
-    try { localStorage.setItem("brainbox-docs", JSON.stringify(docs)); } catch { $("bk-msg").textContent = "這台裝置的儲存空間不夠，沒辦法匯入。"; return false; }
+    const removed = Object.keys(docs).filter(k => !(k in next));
+    for (const k of removed) store.remove(k);
+    for (const [k, v] of Object.entries(next)) if (JSON.stringify(docs[k]) !== JSON.stringify(v)) store.put(k, v);
     render(); showBackupAge();
     $("bk-replace").checked = false;
     $("bk-msg").textContent = replace ? `已整份換成備份檔的內容（${added + updated} 筆）。` : `匯入完成：新增 ${added} 筆、更新 ${updated} 筆。`;
@@ -1165,20 +1187,107 @@ ${JSON.stringify(existing)}
     const save = () => { try { localStorage.setItem(KEY, JSON.stringify(docs)); } catch { flash("這台裝置的儲存空間不夠，沒存成功。"); } render(); try { showBackupAge(); } catch {} };
     return { put: async (id, body) => { docs[id] = body; save(); }, remove: async id => { delete docs[id]; save(); } };
   }
+  const SYNC_KEY = "brainbox-sync";
+  let fs = null, unsub = null, syncCode = "";
+  const MIRROR = "brainbox-docs", PKEY = "brainbox-pending";
+  function newCode(){
+    const abc = "abcdefghijkmnpqrstuvwxyz23456789", a = new Uint8Array(28);
+    crypto.getRandomValues(a); return Array.from(a, x => abc[x % abc.length]).join("");
+  }
+  const validCode = c => /^[a-z0-9]{24,64}$/.test(c || "");
+  const syncLink = () => `${location.origin}${location.pathname}#sync=${syncCode}`;
+  function showCode(){ $("sync-code").textContent = syncCode; }
+  const readP = () => { try { return JSON.parse(localStorage.getItem(PKEY) || "{}"); } catch { return {}; } };
+  const writeP = o => { try { localStorage.setItem(PKEY, JSON.stringify(o)); } catch {} };
+  const mirror = () => { try { localStorage.setItem(MIRROR, JSON.stringify(docs)); } catch {} };
+  const why = e => {
+    const c = String(e?.code || "");
+    if (c.includes("permission")) return "雲端拒絕存檔：請確認 Firestore 的「規則」已換成新的並按「發布」";
+    if (c.includes("not-found")) return "找不到雲端資料庫：請確認 Firestore Database 已建立";
+    if (c.includes("unavailable")) return "暫時連不上網路，恢復連線後會自動補存";
+    return "同步失敗（" + (c || e?.message || "未知錯誤") + "），資料先存在這台裝置";
+  };
+
   function initStore(){
     store = localStore();
-    // 之前登入時還沒存進雲端的資料，搬回這台裝置
+    // 之前登入版本留下、還沒存進雲端的資料，先併回這台裝置
     try {
-      let moved = 0;
       for (const key of Object.keys(localStorage).filter(k => k.startsWith("brainbox-pending-"))){
         const pend = JSON.parse(localStorage.getItem(key) || "{}");
-        for (const [k, op] of Object.entries(pend)){ if (op.op === "del") delete docs[k]; else { docs[k] = op.body; moved++; } }
+        for (const [k, op] of Object.entries(pend)) if (op.op !== "del") docs[k] = op.body;
         localStorage.removeItem(key);
       }
-      if (moved) localStorage.setItem("brainbox-docs", JSON.stringify(docs));
+      mirror();
     } catch {}
-    render(); showBackupAge();
+    render();
+    let code = null, fromLink = false;
+    const m = location.hash.match(/sync=([a-z0-9]{24,64})/i);
+    if (m){ code = m[1].toLowerCase(); fromLink = true; history.replaceState(null, "", location.pathname + location.search); }
+    if (!code){ try { code = localStorage.getItem(SYNC_KEY); } catch {} }
+    if (!validCode(code)) code = newCode();
+    useCode(code, fromLink);
   }
+
+  function useCode(code, announce){
+    const changed = syncCode && syncCode !== code;
+    syncCode = code;
+    try { localStorage.setItem(SYNC_KEY, code); } catch {}
+    showCode();
+    const cfg = window.FIREBASE_CONFIG;
+    if (!cfg || !cfg.apiKey || !window.firebase){ store = localStore(); setSync("local"); return; }
+    try {
+      if (!fs){ firebase.initializeApp(cfg); fs = firebase.firestore(); fs.settings({ ignoreUndefinedProperties: true }); }
+    } catch { setSync("local"); return; }
+    if (unsub){ unsub(); unsub = null; }
+    setSync("connecting");
+    const col = fs.collection("spaces").doc(code).collection("docs");
+    const send = async (k, op) => {
+      try {
+        if (op.op === "del") await col.doc(k).delete(); else await col.doc(k).set(op.body);
+        const p = readP(); if (JSON.stringify(p[k]) === JSON.stringify(op)){ delete p[k]; writeP(p); }
+        if (syncState !== "ok") setSync("ok");
+      } catch (e) { setSync("err", why(e)); }
+    };
+    store = {
+      put: async (k, body) => { docs[k] = body; mirror(); const op = { op: "put", body }; const p = readP(); p[k] = op; writeP(p); render(); send(k, op); },
+      remove: async k => { delete docs[k]; mirror(); const op = { op: "del" }; const p = readP(); p[k] = op; writeP(p); render(); send(k, op); }
+    };
+    // 第一次連上這組同步碼：把這台原本有、雲端沒有的資料補上去
+    const FLAG = "brainbox-joined-" + code;
+    let joined = false; try { joined = !!localStorage.getItem(FLAG); } catch {}
+    col.get().then(snap => {
+      if (!joined){
+        const cloud = new Set(snap.docs.map(d => d.id));
+        const p = readP();
+        for (const [k, v] of Object.entries(docs)) if (!cloud.has(k) && !p[k]) p[k] = { op: "put", body: v };
+        writeP(p);
+        try { localStorage.setItem(FLAG, "1"); } catch {}
+      }
+      for (const [k, op] of Object.entries(readP())) send(k, op);
+      if (announce || changed) flash(`已連上同步碼，現在和其他裝置是同一份資料。`, true);
+    }).catch(e => setSync("err", why(e)));
+    unsub = col.onSnapshot(snap => {
+      const next = {}; snap.forEach(d => { next[d.id] = d.data(); });
+      for (const [k, op] of Object.entries(readP())){ if (op.op === "del") delete next[k]; else next[k] = op.body; }
+      docs = next; mirror(); render();
+      if (!snap.metadata.fromCache && syncState !== "err") setSync("ok");
+    }, e => setSync("err", why(e)));
+  }
+
+  $("acct-btn").addEventListener("click", () => { $("backup").open = true; $("backup").scrollIntoView({ behavior: "smooth", block: "start" }); });
+  $("sync-copy").addEventListener("click", async () => {
+    const link = syncLink();
+    try { await navigator.clipboard.writeText(link); flash("同步連結已複製，傳到其他裝置打開就好。", true); }
+    catch { const i = $("sync-in"); i.value = link; i.focus(); i.select(); flash("沒辦法自動複製，連結已放進下面的框框並選取好，請手動複製。"); }
+  });
+  $("sync-set").addEventListener("click", () => {
+    const raw = $("sync-in").value.trim(); const m = raw.match(/([a-z0-9]{24,64})\s*$/i);
+    const code = m ? m[1].toLowerCase() : "";
+    if (!validCode(code)){ flash("同步碼格式不對，請貼上完整的同步碼或同步連結。"); return; }
+    if (code === syncCode){ flash("這台已經是用這組同步碼了。", true); return; }
+    $("sync-in").value = "";
+    useCode(code, true);
+  });
 
   const h = (location.hash || "").slice(1); if (["add","buy","trip","todo","board"].includes(h)) go(h);
   initStore();

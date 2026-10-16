@@ -1,0 +1,9 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 不用登入：知道同步碼（24 字以上的亂碼）的裝置才能讀寫那一份資料
+    match /spaces/{space}/docs/{doc} {
+      allow read, write: if space.size() >= 24;
+    }
+  }
+}
